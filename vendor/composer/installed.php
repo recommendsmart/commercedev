@@ -3,7 +3,7 @@
         'name' => 'centarro/commerce-kickstart-project',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '24ea2a076daa59fc86414274ac91b13d24187e9c',
+        'reference' => '08ff25928220a5418eb094db1d218d95353d8d97',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -91,7 +91,7 @@
         'centarro/commerce-kickstart-project' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '24ea2a076daa59fc86414274ac91b13d24187e9c',
+            'reference' => '08ff25928220a5418eb094db1d218d95353d8d97',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -797,6 +797,15 @@
             'replaced' => array(
                 0 => '9.4.3',
             ),
+        ),
+        'drupal/config_delete' => array(
+            'pretty_version' => '1.17.0',
+            'version' => '1.17.0.0',
+            'reference' => '8.x-1.17',
+            'type' => 'drupal-module',
+            'install_path' => __DIR__ . '/../../web/modules/contrib/config_delete',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'drupal/config_rewrite' => array(
             'pretty_version' => '1.4.0',
