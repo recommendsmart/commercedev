@@ -4,19 +4,13 @@
 * https://www.drupal.org/node/2815083
 * @preserve
 **/
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-(function ($, Backbone, _, Drupal) {
+(function ($, Backbone, _, Drupal, drupalSettings) {
   Drupal.addToCart.AddToCartView = Backbone.View.extend({
     initialize: function initialize() {
-      var _this = this;
-
       var defaultVariation = this.model.getVariation(this.model.getDefaultVariation());
-      _.each(this.model.getAttributes(), function (attribute, i) {
-        var attributeFieldName = 'attribute_' + attribute.id;
-        if (defaultVariation.hasOwnProperty(attributeFieldName)) {
-          _this.selectedAttributes[attributeFieldName] = defaultVariation[attributeFieldName];
-        }
-      });
+      this._populateSelectedAttributes(defaultVariation);
       this.render();
     },
 
@@ -26,26 +20,40 @@
       'change .attribute-widgets select': 'onAttributeChange',
       'change .variations-select select': 'onVariationTitleChange'
     },
+    _populateSelectedAttributes: function _populateSelectedAttributes(variation) {
+      var _this = this;
+
+      _.each(this.model.getAttributes(), function (attribute, i) {
+        var attributeFieldName = 'attribute_' + attribute.id;
+        _this.selectedAttributes[attributeFieldName] = variation[attributeFieldName];
+      });
+    },
+    _injectVariationFields: function _injectVariationFields(variation) {
+      var injectedFields = this.model.getInjectedFieldsForVariation(variation.uuid);
+      Object.values(injectedFields).map(function (injectedField) {
+        return $('.' + injectedField.class).replaceWith(injectedField.output);
+      });
+    },
     onVariationTitleChange: function onVariationTitleChange(event) {
       Drupal.detachBehaviors();
       var selectedVariation = this.model.getVariation(event.target.value);
       this.model.setSelectedVariation(selectedVariation.uuid);
-      var injectedFields = this.model.getInjectedFieldsForVariation(selectedVariation.uuid);
-      Object.values(injectedFields).map(function (injectedField) {
-        $('.' + injectedField.class).html(injectedField.output);
-      });
+      this._injectVariationFields(selectedVariation);
       Drupal.attachBehaviors();
     },
     onAttributeChange: function onAttributeChange(event) {
       Drupal.detachBehaviors();
-      this.selectedAttributes[event.target.name] = event.target.value;
+      this.selectedAttributes[event.target.name] = parseInt(event.target.value, 10);
       var selectedVariation = this.model.getResolvedVariation(this.selectedAttributes);
       this.model.setSelectedVariation(selectedVariation.uuid);
-      var injectedFields = this.model.getInjectedFieldsForVariation(selectedVariation.uuid);
-      Object.values(injectedFields).map(function (injectedField) {
-        $('.' + injectedField.class).html(injectedField.output);
-      });
-      Drupal.attachBehaviors();
+      this._populateSelectedAttributes(selectedVariation);
+      this._injectVariationFields(selectedVariation);
+      this.render();
+      Drupal.attachBehaviors(this.$el.get(0), _.extend({}, drupalSettings, {
+        triggeringAttribute: event.target.name,
+        selectedAttributes: this.selectedAttributes,
+        selectedVariation: selectedVariation
+      }));
     },
     addToCart: function addToCart() {
       var selectedVariation = this.model.getSelectedVariation();
@@ -83,13 +91,24 @@
       } else {
         var view = this;
         var _html = ['<div class="attribute-widgets form-group">'];
+        var currentVariation = view.model.getSelectedVariation();
         this.model.getAttributes().forEach(function (entry) {
           var defaultArgs = {
+            currentVariation: currentVariation,
+            targetVariations: [],
             label: entry.label,
             attributeId: entry.id,
             attributeValues: entry.values,
             activeValue: view.selectedAttributes['attribute_' + entry.id]
           };
+          if (_typeof(defaultArgs.activeValue) === 'object') {
+            defaultArgs.activeValue = defaultArgs.activeValue.attribute_value_id;
+          }
+          _.each(entry.values, function (attributeValue) {
+            var selectedAttributes = _.extend({}, view.selectedAttributes);
+            selectedAttributes['attribute_' + entry.id] = attributeValue.attribute_value_id;
+            defaultArgs.targetVariations[attributeValue.attribute_value_id] = view.model.getResolvedVariation(selectedAttributes);
+          });
 
           if (entry.element_type === 'select') {
             _html.push(Drupal.theme('addToCartAttributesSelect', defaultArgs));
@@ -108,4 +127,4 @@
     }
   });
   Drupal.addToCart.AddToCartView.prototype.selectedAttributes = {};
-})(jQuery, Backbone, _, Drupal);
+})(jQuery, Backbone, _, Drupal, drupalSettings);

@@ -217,21 +217,24 @@ class AddToCart extends FormatterBase implements ContainerFactoryPluginInterface
       ]))),
     ];
 
-    if ($purchased_entity_widget['type'] == 'commerce_product_variation_attributes') {
-      $prepared_attributes = $this->attributeMapper->prepareAttributes($default_variation, $variations);
-      $prepared_attributes = array_filter($prepared_attributes, function (PreparedAttribute $prepared_attribute) {
-        // There will always be at least one value, possibly `_none`.
-        // If we have more than one value, allow the prepared attribute. But if
-        // we only have one, do not consider it, if it is the `_none` value.
-        $values = $prepared_attribute->getValues();
-        return (count($values) > 1) || !isset($values['_none']);
-      });
+    if ($purchased_entity_widget['type'] === 'commerce_product_variation_attributes') {
+      foreach ($variations as $variation) {
+        $prepared_attributes = $this->attributeMapper->prepareAttributes($variation, $variations);
+        $prepared_attributes = array_filter($prepared_attributes, static function (PreparedAttribute $prepared_attribute) {
+          // There will always be at least one value, possibly `_none`.
+          // If we have more than one value, allow the prepared attribute. But if
+          // we only have one, do not consider it, if it is the `_none` value.
+          $values = $prepared_attribute->getValues();
+          return (count($values) > 1) || !isset($values['_none']);
+        });
 
-      $elements[0]['add_to_cart_form']['#attached']['library'][] = 'commerce_product/rendered-attributes';
-      $elements[0]['add_to_cart_form']['#attached']['drupalSettings']['addToCart'][$product->uuid()] += [
-        'attributes' => $this->serializer->normalize(array_values($prepared_attributes)),
-        'renderedAttributes' => $this->renderPreparedAttributes($prepared_attributes),
-      ];
+        $elements[0]['add_to_cart_form']['#attached']['library'][] = 'commerce_product/rendered-attributes';
+        $elements[0]['add_to_cart_form']['#attached']['drupalSettings']['addToCart'][$product->uuid()]['attributeOptions'][$variation->uuid()] = [
+          'attributes' => $this->serializer->normalize(array_values($prepared_attributes)),
+          'renderedAttributes' => $this->renderPreparedAttributes($prepared_attributes),
+        ];
+      }
+
       $elements[0]['add_to_cart_form']['#attached']['drupalSettings']['theme'] += [
         'commerce_cart_flyout_add_to_cart_attributes_select' => $this->renderTemplate('commerce_cart_flyout_add_to_cart_attributes_select'),
         'commerce_cart_flyout_add_to_cart_attributes_radios' => $this->renderTemplate('commerce_cart_flyout_add_to_cart_attributes_radios'),

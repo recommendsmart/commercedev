@@ -30,6 +30,8 @@
       });
     },
     render: function render() {
+      Drupal.detachBehaviors(this.$el[0]);
+
       var template = Drupal.cartFlyout.getTemplate({
         id: 'commerce_cart_flyout_offcanvas',
         data: Drupal.cartFlyout.templates.offcanvas
@@ -43,6 +45,7 @@
         model: this.model
       });
       contents.render();
+      Drupal.attachBehaviors(this.$el[0]);
     }
   });
   Drupal.cartFlyout.CartContentsView = Backbone.View.extend({

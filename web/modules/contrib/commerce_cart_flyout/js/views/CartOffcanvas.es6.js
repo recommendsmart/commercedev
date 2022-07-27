@@ -23,7 +23,7 @@
          * @inheritdoc
          */
         render() {
-
+          Drupal.detachBehaviors(this.$el[0]);
           // @todo create a new View, or move `cart--cart-offcanvas`
           // This would allow us to use Twig since we do not need condiitonals.
           const template = Drupal.cartFlyout.getTemplate({
@@ -39,6 +39,7 @@
             model: this.model
           });
           contents.render();
+          Drupal.attachBehaviors(this.$el[0]);
         },
       });
       Drupal.cartFlyout.CartContentsView = Backbone.View.extend(/** @lends Drupal.cartFlyout.CartContentsView# */{
