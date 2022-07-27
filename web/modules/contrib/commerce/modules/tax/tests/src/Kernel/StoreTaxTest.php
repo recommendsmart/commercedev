@@ -40,7 +40,7 @@ class StoreTaxTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_tax',
     'commerce_tax_test',
   ];
@@ -48,7 +48,7 @@ class StoreTaxTest extends OrderKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['commerce_tax']);

@@ -24,7 +24,7 @@ class ProductVariationTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'path',
     'commerce_product',
     // Needed to confirm that url generation doesn't cause a crash when
@@ -42,7 +42,7 @@ class ProductVariationTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_product_variation');

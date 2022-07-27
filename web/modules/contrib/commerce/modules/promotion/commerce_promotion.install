@@ -5,7 +5,10 @@
  * Install, update and uninstall functions for the commerce_promotion module.
  */
 
+use Drupal\commerce\CommerceContentEntityStorageSchema;
+use Drupal\commerce_promotion\Entity\Promotion;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\user\Entity\Role;
 
 /**
  * Implements hook_schema().
@@ -159,4 +162,180 @@ function commerce_promotion_update_8205() {
 
   $entity_definition_update->installFieldStorageDefinition('usage_limit_customer', 'commerce_promotion', 'commerce_promotion', $storage_definition);
   $entity_definition_update->installFieldStorageDefinition('usage_limit_customer', 'commerce_promotion_coupon', 'commerce_promotion', $storage_definition);
+}
+
+/**
+ * Ensure new field indexes on the coupon entity.
+ */
+function commerce_promotion_update_8206() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  // Get the current coupon entity type definition, ensure the storage schema
+  // class is set.
+  $entity_type = $entity_type_manager->getDefinition('commerce_promotion_coupon')
+    ->setHandlerClass('storage_schema', CommerceContentEntityStorageSchema::class);
+
+  // Regenerate entity type indexes.
+  $definition_update_manager->updateEntityType($entity_type);
+}
+
+/**
+ * Update the code field definition.
+ */
+function commerce_promotion_update_8207() {
+  $definition_update_manager = \Drupal::service('entity.definition_update_manager');
+  $definition_update_manager->updateFieldStorageDefinition($definition_update_manager->getFieldStorageDefinition('code', 'commerce_promotion_coupon'));
+}
+
+/**
+ * Add created/changed timestamp fields to promotions & coupons.
+ */
+function commerce_promotion_update_8208() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  $created = BaseFieldDefinition::create('created')
+    ->setLabel(t('Created'))
+    ->setTranslatable(TRUE)
+    ->setDescription(t('The time when the promotion was created.'));
+  $definition_update_manager->installFieldStorageDefinition('created', 'commerce_promotion', 'commerce_promotion', $created);
+
+  $changed = BaseFieldDefinition::create('changed')
+    ->setLabel(t('Changed'))
+    ->setTranslatable(TRUE)
+    ->setDescription(t('The time when the promotion was last edited.'))
+    ->setDisplayConfigurable('view', TRUE);
+  $definition_update_manager->installFieldStorageDefinition('changed', 'commerce_promotion', 'commerce_promotion', $changed);
+
+  $created = BaseFieldDefinition::create('created')
+    ->setLabel(t('Created'))
+    ->setDescription(t('The time when the coupon was created.'));
+  $definition_update_manager->installFieldStorageDefinition('created', 'commerce_promotion_coupon', 'commerce_promotion', $created);
+
+  $changed = BaseFieldDefinition::create('changed')
+    ->setLabel(t('Changed'))
+    ->setDescription(t('The time when the coupon was last edited.'))
+    ->setDisplayConfigurable('view', TRUE);
+  $definition_update_manager->installFieldStorageDefinition('changed', 'commerce_promotion_coupon', 'commerce_promotion', $changed);
+}
+
+/**
+ * Add a 'uid' field to promotions.
+ */
+function commerce_promotion_update_8209() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  // Set the owner of the promotions to be first user which which has
+  // the 'administrator' role. This way we avoid hard coding user ID 1 for sites
+  // that prefer to not give it any special meaning.
+  $admin_roles = \Drupal::entityTypeManager()
+    ->getStorage('user_role')
+    ->getQuery()
+    ->condition('is_admin', TRUE)
+    ->accessCheck(FALSE)
+    ->execute();
+  if (!empty($admin_roles)) {
+    $query = \Drupal::entityTypeManager()
+      ->getStorage('user')
+      ->getQuery()
+      ->condition('roles', $admin_roles, 'IN')
+      ->condition('status', 1)
+      ->sort('uid', 'ASC')
+      ->accessCheck(FALSE)
+      ->range(0, 1);
+    $result = $query
+      ->execute();
+  }
+  // Defaults to user ID 1 if we could not find any other administrator users.
+  $owner_id = !empty($result) ? reset($result) : 1;
+
+  $entity_type = $definition_update_manager->getEntityType('commerce_promotion');
+  $keys = $entity_type->getKeys();
+  $keys['owner'] = 'uid';
+  $entity_type->set('entity_keys', $keys);
+  $definition_update_manager->updateEntityType($entity_type);
+
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Owner'))
+    ->setDescription(t('The promotion owner.'))
+    ->setSetting('target_type', 'user')
+    ->setTranslatable(TRUE)
+    ->setInitialValue($owner_id)
+    ->setDefaultValueCallback(Promotion::class . '::getDefaultEntityOwner');
+  $definition_update_manager->installFieldStorageDefinition('uid', 'commerce_promotion', 'commerce_promotion', $storage_definition);
+
+  /** @var \Drupal\user\RoleInterface $role */
+  foreach (Role::loadMultiple() as $role) {
+    if (!$role->hasPermission('update commerce_promotion')) {
+      continue;
+    }
+    $role->grantPermission("update any commerce_promotion");
+    $role->save();
+  }
+}
+
+/**
+ * Mark the promotion "stores" field as optional.
+ */
+function commerce_promotion_update_8210() {
+  \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
+}
+
+/**
+ * Add start & end dates to coupons.
+ */
+function commerce_promotion_update_8211() {
+  $fields['start_date'] = BaseFieldDefinition::create('datetime')
+    ->setLabel(t('Start date'))
+    ->setDescription(t('The date the coupon becomes valid.'))
+    ->setRequired(FALSE)
+    ->setSetting('datetime_type', 'datetime')
+    ->setSetting('datetime_optional_label', t('Provide a start date'))
+    ->setDefaultValueCallback('Drupal\commerce_promotion\Entity\Promotion::getDefaultStartDate')
+    ->setDisplayOptions('form', [
+      'type' => 'commerce_store_datetime',
+      'weight' => 5,
+    ]);
+
+  $fields['end_date'] = BaseFieldDefinition::create('datetime')
+    ->setLabel(t('End date'))
+    ->setDescription(t('The date after which the coupon is invalid.'))
+    ->setRequired(FALSE)
+    ->setSetting('datetime_type', 'datetime')
+    ->setSetting('datetime_optional_label', t('Provide an end date'))
+    ->setDisplayOptions('form', [
+      'type' => 'commerce_store_datetime',
+      'weight' => 6,
+    ]);
+
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  foreach ($fields as $name => $definition) {
+    // Skip installing the field storage definition if the field already exists.
+    // This could happen if the commerce_coupon_conditions module is installed
+    // on the site for example.
+    if ($definition_update_manager->getFieldStorageDefinition($name, 'commerce_promotion_coupon')) {
+      continue;
+    }
+    $definition_update_manager->installFieldStorageDefinition($name, 'commerce_promotion_coupon', 'commerce_promotion', $definition);
+  }
+}
+
+/**
+ * Allow specifying whether a promotion requires a coupon code to apply.
+ */
+function commerce_promotion_update_8212() {
+  $definition = BaseFieldDefinition::create('boolean')
+    ->setLabel(t('Require a coupon to apply this promotion'))
+    ->setDefaultValue(FALSE)
+    ->setDisplayOptions('form', [
+      'type' => 'boolean_checkbox',
+      'settings' => [
+        'display_label' => TRUE,
+      ],
+    ])
+    ->setDisplayConfigurable('view', TRUE)
+    ->setDisplayConfigurable('form', TRUE);
+
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+  $definition_update_manager->installFieldStorageDefinition('require_coupon', 'commerce_promotion', 'commerce_promotion', $definition);
 }

@@ -22,7 +22,7 @@ class QueryAccessEventTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'entity',
     'entity_module_test',
   ];
@@ -30,7 +30,7 @@ class QueryAccessEventTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('entity_test_enhanced');
@@ -41,6 +41,23 @@ class QueryAccessEventTest extends EntityKernelTestBase {
     $entity_type_manager = $this->container->get('entity_type.manager');
     $entity_type = $entity_type_manager->getDefinition('entity_test_enhanced');
     $this->handler = QueryAccessHandler::createInstance($this->container, $entity_type);
+  }
+
+  /**
+   * Tests the generic event.
+   */
+  public function testGenericEvent() {
+    $entity_type_manager = $this->container->get('entity_type.manager');
+    $entity_type = $entity_type_manager->getDefinition('entity_test_enhanced_with_owner');
+    $handler = QueryAccessHandler::createInstance($this->container, $entity_type);
+
+    $first_user = $this->createUser(['mail' => 'user9000@example.com']);
+    $conditions = $handler->getConditions('view', $first_user);
+    $this->assertTrue($conditions->isAlwaysFalse());
+
+    $second_user = $this->createUser(['mail' => 'user9001@example.com']);
+    $conditions = $handler->getConditions('view', $second_user);
+    $this->assertFalse($conditions->isAlwaysFalse());
   }
 
   /**

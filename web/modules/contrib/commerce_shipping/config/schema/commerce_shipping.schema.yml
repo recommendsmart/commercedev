@@ -5,6 +5,27 @@ commerce.commerce_condition.plugin.shipment_address:
       type: address_zone
       label: 'Zone'
 
+commerce.commerce_condition.plugin.order_shipping_method:
+  type: commerce_condition_configuration
+  mapping:
+    shipping_methods:
+      type: sequence
+      label: 'Shipping methods'
+      orderby: value
+      sequence:
+        type: string
+        label: 'Shipping method'
+
+commerce.commerce_condition.plugin.shipment_quantity:
+  type: commerce_condition_configuration
+  mapping:
+    operator:
+      type: string
+      label: 'Operator'
+    quantity:
+      type: integer
+      label: 'Quantity'
+
 commerce.commerce_condition.plugin.shipment_weight:
   type: commerce_condition_configuration
   mapping:
@@ -26,6 +47,9 @@ commerce_order.commerce_order_type.*.third_party.commerce_shipping:
 commerce_checkout.commerce_checkout_pane.shipping_information:
   type: commerce_checkout_pane_configuration
   mapping:
+    auto_recalculate:
+      type: boolean
+      label: 'Auto recalculate shipping costs when the shipping address changes'
     require_shipping_profile:
       type: boolean
       label: 'Hide shipping costs until an address is entered'
@@ -79,6 +103,12 @@ commerce_shipping.commerce_shipment_type.*:
     profileType:
       type: string
       label: 'The profile type'
+    sendConfirmation:
+      type: boolean
+      label: 'Send Confirmation'
+    confirmationBcc:
+      type: string
+      label: 'The confirmation BCC email'
 
 commerce_shipping.commerce_package_type.*:
   type: config_entity

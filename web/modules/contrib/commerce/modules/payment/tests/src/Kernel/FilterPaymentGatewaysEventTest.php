@@ -26,7 +26,7 @@ class FilterPaymentGatewaysEventTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_payment',
     'commerce_payment_example',
     'commerce_payment_test',
@@ -35,7 +35,7 @@ class FilterPaymentGatewaysEventTest extends OrderKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig('commerce_payment');

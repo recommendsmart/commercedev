@@ -72,12 +72,12 @@ interface PaymentInterface extends ContentEntityInterface, EntityWithPaymentGate
   /**
    * Sets the payment remote ID.
    *
-   * @param string $remote_ID
+   * @param string $remote_id
    *   The payment remote ID.
    *
    * @return $this
    */
-  public function setRemoteId($remote_ID);
+  public function setRemoteId($remote_id);
 
   /**
    * Gets the payment remote state.
@@ -96,6 +96,42 @@ interface PaymentInterface extends ContentEntityInterface, EntityWithPaymentGate
    * @return $this
    */
   public function setRemoteState($remote_state);
+
+  /**
+   * Gets the payment AVS response code.
+   *
+   * @return string
+   *   The payment AVS response code.
+   */
+  public function getAvsResponseCode();
+
+  /**
+   * Sets the payment AVS response code.
+   *
+   * @param string $avs_response_code
+   *   The payment AVS response code.
+   *
+   * @return $this
+   */
+  public function setAvsResponseCode($avs_response_code);
+
+  /**
+   * Gets the payment AVS response code label.
+   *
+   * @return string|null
+   *   The payment AVS response code label, or NULL if it does not exist.
+   */
+  public function getAvsResponseCodeLabel();
+
+  /**
+   * Sets the payment AVS response code label.
+   *
+   * @param string $avs_response_code_label
+   *   The payment AVS response code label.
+   *
+   * @return $this
+   */
+  public function setAvsResponseCodeLabel($avs_response_code_label);
 
   /**
    * Gets the payment balance.

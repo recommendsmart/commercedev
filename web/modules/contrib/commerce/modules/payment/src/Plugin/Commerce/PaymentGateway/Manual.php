@@ -5,6 +5,7 @@ namespace Drupal\commerce_payment\Plugin\Commerce\PaymentGateway;
 use Drupal\commerce_payment\Entity\PaymentInterface;
 use Drupal\commerce_payment\PaymentMethodTypeManager;
 use Drupal\commerce_payment\PaymentTypeManager;
+use Drupal\commerce_price\MinorUnitsConverterInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -56,11 +57,13 @@ class Manual extends PaymentGatewayBase implements ManualPaymentGatewayInterface
    *   The payment method type manager.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time.
+   * @param \Drupal\commerce_price\MinorUnitsConverterInterface $minor_units_converter
+   *   The minor units converter.
    * @param \Drupal\Core\Utility\Token $token
    *   The token service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PaymentTypeManager $payment_type_manager, PaymentMethodTypeManager $payment_method_type_manager, TimeInterface $time, Token $token) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $payment_type_manager, $payment_method_type_manager, $time);
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PaymentTypeManager $payment_type_manager, PaymentMethodTypeManager $payment_method_type_manager, TimeInterface $time, MinorUnitsConverterInterface $minor_units_converter, Token $token) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $payment_type_manager, $payment_method_type_manager, $time, $minor_units_converter);
 
     $this->token = $token;
   }
@@ -77,6 +80,7 @@ class Manual extends PaymentGatewayBase implements ManualPaymentGatewayInterface
       $container->get('plugin.manager.commerce_payment_type'),
       $container->get('plugin.manager.commerce_payment_method_type'),
       $container->get('datetime.time'),
+      $container->get('commerce_price.minor_units_converter'),
       $container->get('token')
     );
   }
@@ -153,28 +157,34 @@ class Manual extends PaymentGatewayBase implements ManualPaymentGatewayInterface
    * {@inheritdoc}
    */
   public function buildPaymentOperations(PaymentInterface $payment) {
-    $payment_state = $payment->getState()->getId();
     $operations = [];
     $operations['receive'] = [
       'title' => $this->t('Receive'),
       'page_title' => $this->t('Receive payment'),
       'plugin_form' => 'receive-payment',
-      'access' => $payment_state == 'pending',
+      'access' => $payment->getState()->getId() === 'pending',
     ];
     $operations['void'] = [
       'title' => $this->t('Void'),
       'page_title' => $this->t('Void payment'),
       'plugin_form' => 'void-payment',
-      'access' => $payment_state == 'pending',
+      'access' => $this->canVoidPayment($payment),
     ];
     $operations['refund'] = [
       'title' => $this->t('Refund'),
       'page_title' => $this->t('Refund payment'),
       'plugin_form' => 'refund-payment',
-      'access' => in_array($payment_state, ['completed', 'partially_refunded']),
+      'access' => $this->canRefundPayment($payment),
     ];
 
     return $operations;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function canVoidPayment(PaymentInterface $payment) {
+    return $payment->getState()->getId() === 'pending';
   }
 
   /**

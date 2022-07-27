@@ -133,9 +133,12 @@ class ConfigurableFieldManager implements ConfigurableFieldManagerInterface {
       }
     }
 
-    $query = $this->entityTypeManager->getStorage($entity_type_id)->getQuery();
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
+    $bundle_key = $storage->getEntityType()->getKey('bundle');
+    $query = $storage->getQuery();
     $query
-      ->condition('type', $bundle)
+      ->accessCheck(FALSE)
+      ->condition($bundle_key, $bundle)
       ->exists($field_name . '.' . $property)
       ->range(0, 1);
     $result = $query->execute();

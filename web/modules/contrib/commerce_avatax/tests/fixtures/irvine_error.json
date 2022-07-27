@@ -1,0 +1,38 @@
+{
+  "address": {
+    "textCase": "Mixed",
+    "line1": "20000 Main Street",
+    "city": "Irvine",
+    "region": "CA",
+    "country": "US",
+    "postalCode": "92614"
+  },
+  "validatedAddresses": [
+    {
+      "addressType": "UnknownAddressType",
+      "line1": "20000 Main Street",
+      "line2": "",
+      "line3": "",
+      "city": "Irvine",
+      "region": "CA",
+      "country": "US",
+      "postalCode": "92614",
+      "latitude": 33.683352,
+      "longitude": -117.841168
+    }
+  ],
+  "coordinates": {
+    "latitude": 33.683352,
+    "longitude": -117.841168
+  },
+  "resolutionQuality": "NotCoded",
+  "messages": [
+    {
+      "summary": "The address number is out of range",
+      "details": "The address was found but the street number in the input address was not between the low and high range of the post office database.",
+      "refersTo": "Address.Line0",
+      "severity": "Error",
+      "source": "Avalara.AvaTax.Services.Address"
+    }
+  ]
+}

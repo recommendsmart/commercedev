@@ -27,7 +27,7 @@ class OffsiteOrderDataTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
     'commerce_cart',
     'commerce_checkout',
@@ -39,7 +39,7 @@ class OffsiteOrderDataTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $variation = $this->createEntity('commerce_product_variation', [

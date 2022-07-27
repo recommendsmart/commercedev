@@ -33,7 +33,7 @@ class MailHandlerThemeTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'mailsystem',
     'mailsystem_test',
   ];
@@ -41,7 +41,7 @@ class MailHandlerThemeTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['mailsystem']);

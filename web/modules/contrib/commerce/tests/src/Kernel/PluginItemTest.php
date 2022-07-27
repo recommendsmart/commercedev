@@ -18,7 +18,7 @@ class PluginItemTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'entity_reference_revisions',
     'profile',
     'state_machine',
@@ -29,10 +29,10 @@ class PluginItemTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
-    Role::create(['id' => 'test_role', 'name' => $this->randomString()])->save();
+    Role::create(['id' => 'test_role', 'label' => $this->randomString()])->save();
 
     $field_storage = FieldStorageConfig::create([
       'field_name' => 'test_conditions',

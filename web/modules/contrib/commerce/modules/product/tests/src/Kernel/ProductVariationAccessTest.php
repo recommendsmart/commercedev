@@ -19,7 +19,7 @@ class ProductVariationAccessTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'path',
     'commerce_product',
     'commerce_product_test',
@@ -35,7 +35,7 @@ class ProductVariationAccessTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_product_variation');

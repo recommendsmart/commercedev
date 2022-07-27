@@ -34,13 +34,6 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
   protected $panes = [];
 
   /**
-   * Static cache of visible steps.
-   *
-   * @var array
-   */
-  protected $visibleSteps = [];
-
-  /**
    * Constructs a new CheckoutFlowWithPanesBase object.
    *
    * @param array $configuration
@@ -134,19 +127,9 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
   /**
    * {@inheritdoc}
    */
-  public function getVisibleSteps() {
-    if (empty($this->visibleSteps)) {
-      $steps = $this->getSteps();
-      foreach ($steps as $step_id => $step) {
-        // A step is visible if it has at least one visible pane.
-        if (empty($this->getVisiblePanes($step_id))) {
-          unset($steps[$step_id]);
-        }
-      }
-      $this->visibleSteps = $steps;
-    }
-
-    return $this->visibleSteps;
+  protected function isStepVisible($step_id) {
+    // A step is visible if it has at least one visible pane.
+    return !empty($this->getVisiblePanes($step_id));
   }
 
   /**
@@ -154,8 +137,12 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
    */
   public function calculateDependencies() {
     $dependencies = parent::calculateDependencies();
+
     // Merge-in the pane dependencies.
-    foreach ($this->getPanes() as $pane) {
+    foreach ($this->getPanes() as $id => $pane) {
+      if (!isset($this->configuration['panes'][$id])) {
+        continue;
+      }
       foreach ($pane->calculateDependencies() as $dependency_type => $list) {
         foreach ($list as $name) {
           $dependencies[$dependency_type][] = $name;
@@ -590,10 +577,16 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
     parent::validateForm($form, $form_state);
 
     foreach ($this->getVisiblePanes($form['#step_id']) as $pane_id => $pane) {
+      if (!isset($form[$pane_id])) {
+        continue;
+      }
       $pane->validatePaneForm($form[$pane_id], $form_state, $form);
     }
     if ($this->hasSidebar($form['#step_id'])) {
       foreach ($this->getVisiblePanes('_sidebar') as $pane_id => $pane) {
+        if (!isset($form['sidebar'][$pane_id])) {
+          continue;
+        }
         $pane->validatePaneForm($form['sidebar'][$pane_id], $form_state, $form);
       }
     }
@@ -604,10 +597,16 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     foreach ($this->getVisiblePanes($form['#step_id']) as $pane_id => $pane) {
+      if (!isset($form[$pane_id])) {
+        continue;
+      }
       $pane->submitPaneForm($form[$pane_id], $form_state, $form);
     }
     if ($this->hasSidebar($form['#step_id'])) {
       foreach ($this->getVisiblePanes('_sidebar') as $pane_id => $pane) {
+        if (!isset($form['sidebar'][$pane_id])) {
+          continue;
+        }
         $pane->submitPaneForm($form['sidebar'][$pane_id], $form_state, $form);
       }
     }

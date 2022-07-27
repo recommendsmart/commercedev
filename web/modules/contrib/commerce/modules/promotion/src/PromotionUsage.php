@@ -18,7 +18,7 @@ class PromotionUsage implements PromotionUsageInterface {
   protected $connection;
 
   /**
-   * Constructs a PromotionUsage object.
+   * Constructs a new PromotionUsage object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection to use.
@@ -39,6 +39,19 @@ class PromotionUsage implements PromotionUsageInterface {
         'mail' => $order->getEmail(),
       ])
       ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unregister(OrderInterface $order, PromotionInterface $promotion, CouponInterface $coupon = NULL) {
+    $query = $this->connection->delete('commerce_promotion_usage');
+    $query->condition('promotion_id', $promotion->id());
+    $query->condition('order_id', $order->id());
+    if ($coupon) {
+      $query->condition('coupon_id', $coupon->id());
+    }
+    $query->execute();
   }
 
   /**
@@ -101,7 +114,8 @@ class PromotionUsage implements PromotionUsageInterface {
       $query->condition('mail', $mail);
     }
     $query->groupBy('promotion_id');
-    $result = $query->execute()->fetchAllAssoc('promotion_id', \PDO::FETCH_ASSOC);
+    $result = $query->execute()
+      ->fetchAllAssoc('promotion_id', \PDO::FETCH_ASSOC);
     // Ensure that each promotion ID gets a count, even if it's not present
     // in the query due to non-existent usage.
     $counts = [];

@@ -22,7 +22,7 @@ class WidgetSubmit {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function attach(&$form, FormStateInterface $form_state) {
+  public static function attach(array &$form, FormStateInterface $form_state) {
     // $form['#ief_element_submit'] runs after the #ief_element_submit
     // callbacks of all subelements, which means that doSubmit() has
     // access to the final IEF $form_state.
@@ -38,16 +38,24 @@ class WidgetSubmit {
    *   The form state.
    */
   public static function doSubmit(array $form, FormStateInterface $form_state) {
-    foreach ($form_state->get('inline_entity_form') as &$widget_state) {
+    $referenceUpgrader = new ReferenceUpgrader();
+    $widget_states =& $form_state->get('inline_entity_form');
+    // Widget states can be in an arbitrary order depending on user's form
+    // interaction. We sort them lexicographically in reverse order to get inner
+    // forms before outer forms, to ensure inside-out saving of entities.
+    // @see \Drupal\inline_entity_form\Plugin\Field\FieldWidget\InlineEntityFormBase::makeIefId
+    krsort($widget_states, SORT_STRING);
+    foreach ($widget_states as &$widget_state) {
       $widget_state += ['entities' => [], 'delete' => []];
-
-      foreach ($widget_state['entities'] as $delta => $entity_item) {
+      foreach ($widget_state['entities'] as &$entity_item) {
         if (!empty($entity_item['entity']) && !empty($entity_item['needs_save'])) {
           /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
           $entity = $entity_item['entity'];
           $handler = InlineEntityForm::getInlineFormHandler($entity->getEntityTypeId());
+          $referenceUpgrader->upgradeEntityReferences($entity);
           $handler->save($entity);
-          $widget_state['entities'][$delta]['needs_save'] = FALSE;
+          $referenceUpgrader->registerEntity($entity);
+          $entity_item['needs_save'] = FALSE;
         }
       }
 

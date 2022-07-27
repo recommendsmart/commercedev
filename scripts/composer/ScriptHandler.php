@@ -9,6 +9,7 @@ namespace DrupalProject\composer;
 
 use Composer\Script\Event;
 use Composer\Semver\Comparator;
+use Drupal\Core\Site\Settings;
 use DrupalFinder\DrupalFinder;
 use Symfony\Component\Filesystem\Filesystem;
 use Webmozart\PathUtil\Path;
@@ -20,6 +21,7 @@ class ScriptHandler {
     $drupalFinder = new DrupalFinder();
     $drupalFinder->locateRoot(getcwd());
     $drupalRoot = $drupalFinder->getDrupalRoot();
+    $composerRoot = $drupalFinder->getComposerRoot();
 
     $dirs = [
       'modules',
@@ -36,27 +38,8 @@ class ScriptHandler {
     }
 
     // Prepare the settings file for installation
-    if (!$fs->exists($drupalRoot . '/sites/default/settings.php') && $fs->exists($drupalRoot . '/sites/default/default.settings.php')) {
-      $fs->copy($drupalRoot . '/sites/default/default.settings.php', $drupalRoot . '/sites/default/settings.php');
-      require_once $drupalRoot . '/core/includes/bootstrap.inc';
-      require_once $drupalRoot . '/core/includes/install.inc';
-      $settings['config_directories'] = [
-        CONFIG_SYNC_DIRECTORY => (object) [
-          'value' => Path::makeRelative($drupalFinder->getComposerRoot() . '/config/sync', $drupalRoot),
-          'required' => TRUE,
-        ],
-      ];
-
-      // Workaround for Bootstrap https://www.drupal.org/project/bootstrap/issues/2667062
-      $settings['settings']['maintenance_theme'] = (object) [
-        'value' => 'seven',
-        'required' => TRUE,
-      ];
-
-      // When writing $settings[], an existing Settings instance needs to exist.
-      new \Drupal\Core\Site\Settings([]);
-      drupal_rewrite_settings($settings, $drupalRoot . '/sites/default/settings.php');
-
+    if (!$fs->exists($drupalRoot . '/sites/default/settings.php') && $fs->exists($drupalRoot . '/profiles/contrib/commerce_kickstart/assets/settings.php')) {
+      $fs->copy($drupalRoot . '/profiles/contrib/commerce_kickstart/assets/settings.php', $drupalRoot . '/sites/default/settings.php');
       $fs->chmod($drupalRoot . '/sites/default/settings.php', 0666);
       $event->getIO()->write("Created a sites/default/settings.php file with chmod 0666");
     }
@@ -68,6 +51,10 @@ class ScriptHandler {
       umask($oldmask);
       $event->getIO()->write("Created a sites/default/files directory with chmod 0777");
     }
+    
+    // Mirror config splits from the profile to the project config directory.
+    $fs->mirror($drupalRoot . '/profiles/contrib/commerce_kickstart/config/splits', $composerRoot . '/config/splits');
+    $event->getIO()->write("Mirrored config splits from Commerce Kickstart into ../config/splits");
   }
 
   /**

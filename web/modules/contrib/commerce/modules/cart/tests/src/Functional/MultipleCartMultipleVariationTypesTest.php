@@ -23,7 +23,7 @@ class MultipleCartMultipleVariationTypesTest extends CartBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_cart_test',
   ];
 
@@ -40,7 +40,7 @@ class MultipleCartMultipleVariationTypesTest extends CartBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     // Unpublish parent test product.
     $this->variation->getProduct()->setUnpublished();
@@ -191,6 +191,7 @@ class MultipleCartMultipleVariationTypesTest extends CartBrowserTestBase {
       'id' => $id,
       'label' => $label,
       'variationType' => $variation_type->id(),
+      'variationTypes' => [],
     ]);
     $product_type->save();
   }

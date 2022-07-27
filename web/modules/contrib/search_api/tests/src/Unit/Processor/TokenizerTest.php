@@ -126,6 +126,31 @@ class TokenizerTest extends UnitTestCase {
         'foo-bar',
         [Utility::createTextToken('foobar')],
       ],
+      // Test changing ignored characters.
+      [
+        'word-word',
+        [$word_token, $word_token],
+        ['ignored' => '._'],
+      ],
+      [
+        'foobar',
+        [Utility::createTextToken('foobr')],
+        ['ignored' => 'a'],
+      ],
+      [
+        'foo-bar',
+        [Utility::createTextToken('foo-bar')],
+        [
+          'ignored' => '',
+          'spaces' => ' ',
+        ],
+      ],
+      // Test multiple ignored characters are still treated as word boundary.
+      [
+        'foobar',
+        [Utility::createTextToken('bar')],
+        ['ignored' => 'o'],
+      ],
     ];
   }
 

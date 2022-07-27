@@ -584,16 +584,16 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
       // Let modules alter the query.
       $event_base_name = SearchApiEvents::QUERY_PRE_EXECUTE;
       $event = new QueryPreExecuteEvent($this);
-      $this->getEventDispatcher()->dispatch($event_base_name, $event);
+      $this->getEventDispatcher()->dispatch($event, $event_base_name);
       $hooks = ['search_api_query'];
       foreach ($this->tags as $tag) {
         $hooks[] = "search_api_query_$tag";
         $event_name = "$event_base_name.$tag";
         $event = new QueryPreExecuteEvent($this);
-        $this->getEventDispatcher()->dispatch($event_name, $event);
+        $this->getEventDispatcher()->dispatch($event, $event_name);
       }
 
-      $description = 'This hook is deprecated in search_api 8.x-1.14 and will be removed in 9.x-1.0. Please use the "search_api.query_pre_execute" event instead. See https://www.drupal.org/node/3059866';
+      $description = 'This hook is deprecated in search_api:8.x-1.14 and is removed from search_api:2.0.0. Please use the "search_api.query_pre_execute" event instead. See https://www.drupal.org/node/3059866';
       $this->getModuleHandler()->alterDeprecated($description, $hooks, $this);
     }
   }
@@ -612,7 +612,7 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
     // Let modules alter the results.
     $event_base_name = SearchApiEvents::PROCESSING_RESULTS;
     $event = new ProcessingResultsEvent($this->results);
-    $this->getEventDispatcher()->dispatch($event_base_name, $event);
+    $this->getEventDispatcher()->dispatch($event, $event_base_name);
     $this->results = $event->getResults();
 
     $hooks = ['search_api_results'];
@@ -620,10 +620,10 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
       $hooks[] = "search_api_results_$tag";
 
       $event = new ProcessingResultsEvent($this->results);
-      $this->getEventDispatcher()->dispatch("$event_base_name.$tag", $event);
+      $this->getEventDispatcher()->dispatch($event, "$event_base_name.$tag");
       $this->results = $event->getResults();
     }
-    $description = 'This hook is deprecated in search_api 8.x-1.14 and will be removed in 9.x-1.0. Please use the "search_api.processing_results" event instead. See https://www.drupal.org/node/3059866';
+    $description = 'This hook is deprecated in search_api:8.x-1.14 and is removed from search_api:2.0.0. Please use the "search_api.processing_results" event instead. See https://www.drupal.org/node/3059866';
     $this->getModuleHandler()->alterDeprecated($description, $hooks, $this->results);
 
     // Store the results in the static cache.
@@ -756,10 +756,6 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
    * {@inheritdoc}
    */
   public function getCacheContexts() {
-    // Call the pre-execute method to ensure that processors and modules have
-    // had the chance to alter the query and modify the cacheability metadata.
-    $this->preExecute();
-
     $contexts = $this->cacheContexts;
 
     foreach ($this->getIndex()->getDatasources() as $datasource) {
@@ -773,10 +769,6 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
    * {@inheritdoc}
    */
   public function getCacheTags() {
-    // Call the pre-execute method to ensure that processors and modules have
-    // had the chance to alter the query and modify the cacheability metadata.
-    $this->preExecute();
-
     $tags = $this->cacheTags;
 
     // If the configuration of the search index changes we should invalidate the
@@ -791,15 +783,11 @@ class Query implements QueryInterface, RefinableCacheableDependencyInterface {
    * {@inheritdoc}
    */
   public function getCacheMaxAge() {
-    // Call the pre-execute method to ensure that processors and modules have
-    // had the chance to alter the query and modify the cacheability metadata.
-    $this->preExecute();
-
     return $this->cacheMaxAge;
   }
 
   /**
-   * {@inheritdoc}
+   * Implements the magic __clone() method to properly clone nested objects.
    */
   public function __clone() {
     $this->results = $this->getResults()->getCloneForQuery($this);

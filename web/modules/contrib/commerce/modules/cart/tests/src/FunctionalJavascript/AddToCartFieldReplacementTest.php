@@ -35,7 +35,7 @@ class AddToCartFieldReplacementTest extends CartWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
   ];
 
@@ -47,7 +47,7 @@ class AddToCartFieldReplacementTest extends CartWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Use the title widget so that we do not need to use attributes.

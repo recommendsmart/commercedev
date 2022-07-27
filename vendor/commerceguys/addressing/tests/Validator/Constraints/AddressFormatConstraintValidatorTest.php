@@ -23,7 +23,7 @@ final class AddressFormatConstraintValidatorTest extends ConstraintValidatorTest
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->constraint = new AddressFormatConstraint();
 
@@ -48,11 +48,10 @@ final class AddressFormatConstraintValidatorTest extends ConstraintValidatorTest
 
     /**
      * @covers \CommerceGuys\Addressing\Validator\Constraints\AddressFormatConstraintValidator
-     *
-     * @expectedException \Symfony\Component\Validator\Exception\UnexpectedTypeException
      */
     public function testInvalidValueType()
     {
+        $this->expectException(\Symfony\Component\Validator\Exception\UnexpectedTypeException::class);
         $this->validator->validate(new \stdClass(), $this->constraint);
     }
 
@@ -157,6 +156,9 @@ final class AddressFormatConstraintValidatorTest extends ConstraintValidatorTest
      */
     public function testUnitedStatesSubdivisionPostcodePattern()
     {
+        // Test with subdivision-level postal code validation disabled.
+        $this->constraint->extendedPostalCodeValidation = false;
+
         $address = new Address();
         $address = $address
             ->withCountryCode('US')
@@ -168,6 +170,11 @@ final class AddressFormatConstraintValidatorTest extends ConstraintValidatorTest
             ->withGivenName('John')
             ->withFamilyName('Smith');
 
+        $this->validator->validate($address, $this->constraint);
+        $this->assertNoViolation();
+
+        // Now test with the subdivision-level postal code validation enabled.
+        $this->constraint->extendedPostalCodeValidation = true;
         $this->validator->validate($address, $this->constraint);
         $this->buildViolation($this->constraint->invalidMessage)
             ->atPath('[postalCode]')
@@ -371,7 +378,7 @@ final class AddressFormatConstraintValidatorTest extends ConstraintValidatorTest
     }
 
     /**
-     * @covers CommerceGuys\Addressing\Validator\Constraints\AddressFormatConstraintValidator
+     * @covers \CommerceGuys\Addressing\Validator\Constraints\AddressFormatConstraintValidator
      */
     public function testJapan()
     {

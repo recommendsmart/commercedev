@@ -58,7 +58,9 @@ content:
     type: state_transition_form
     weight: 7
     region: content
-    settings: {  }
+    settings:
+      require_confirmation: true
+      use_modal: true
     third_party_settings: {  }
   title:
     type: string
@@ -77,5 +79,5 @@ content:
       link_to_entity: false
     third_party_settings: {  }
 hidden:
-  adjustments: true
+  original_amount: true
   weight: true

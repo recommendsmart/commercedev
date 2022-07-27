@@ -1,0 +1,66 @@
+{#
+/**
+ * @file
+ * Default template for the 'avatax' address formatter.
+ *
+ * Available variables:
+ *   - original.address_line1: First address line.
+ *   - original.address_line2: Second address line.
+ *   - original.postal_code: Postal code.
+ *   - original.locality: Locality name
+ *   - original.administrative_area: Administrative area code.
+ *   - original.country: Country name.
+ *   - original.country_code: Country code.
+ *   - suggestion.address_line1: First address line.
+ *   - suggestion.address_line2: Second address line.
+ *   - suggestion.postal_code: Postal code.
+ *   - suggestion.locality: Locality name
+ *   - suggestion.administrative_area: Administrative area code.
+ *   - suggestion.country: Country name.
+ *   - suggestion.country_code: Country code.
+ *   - fields: list of different fields.
+ *
+ * @ingroup themeable
+ */
+#}
+
+{% set suggested = suggestion.country_code|length %}
+
+<p class="intro">
+{% if suggested %}
+  {{ 'Your shipping address is different from the post office records. We suggest you accept the recommended address to avoid shipping delays.'|t }}
+{% else %}
+  {{ 'We could not validate the address entered. Please check that you have entered the correct address'|t }}
+{% endif %}
+</p>
+
+<p>Entered address is:</p>
+<p class="address" translate="no">
+  {% if original.address_line1 %}
+    <span> {{ original.address_line1 }}</span>,
+  {% endif %}
+  {% if original.address_line2 %}
+    <span>{{ original.address_line2 }}</span>,
+  {% endif %}
+  {% if original.locality or original.postal_code or original.administrative_area %}
+    <span>{{ original.locality }}</span>, <span>{{ original.administrative_area }}</span> <span>{{ original.postal_code }}</span>
+  {% endif %}
+  {{ original.country_code }}
+</p>
+
+{% if suggested %}
+  <p><strong>Recommended address is:</strong></p>
+  <p class="address" translate="no">
+    {% if suggestion.address_line1 %}
+      <span class="{{ fields.address_line1 ? 'suggested' : 'original' }}"> {{ suggestion.address_line1 }}</span>,
+    {% endif %}
+    {% if suggestion.address_line2 %}
+      <span class="{{ fields.address_line2 ? 'suggested' : 'original' }}">{{ suggestion.address_line2 }}</span>,
+    {% endif %}
+    {% if suggestion.locality or suggestion.postal_code or suggestion.administrative_area %}
+      <span class="{{ fields.locality ? 'suggested' : 'original' }}">{{ suggestion.locality }}</span>, <span class="{{ fields.administrative_area ? 'suggested' : 'original' }}">{{ suggestion.administrative_area }}</span> <span class="{{ fields.postal_code ? 'suggested' : 'original' }}">{{ suggestion.postal_code }}</span>
+    {% endif %}
+    {{ suggestion.country_code }}
+  </p>
+{% endif %}
+

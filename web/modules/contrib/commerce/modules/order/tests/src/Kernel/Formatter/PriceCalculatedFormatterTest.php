@@ -42,19 +42,23 @@ class PriceCalculatedFormatterTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_promotion',
+    'commerce_order_test',
     'commerce_tax',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_promotion');
+    $this->installSchema('commerce_promotion', ['commerce_promotion_usage']);
 
+    $this->store->set('tax_registrations', ['US']);
+    $this->store->save();
     $promotion = Promotion::create([
       'name' => 'Promotion 1',
       'order_types' => ['default'],
@@ -157,10 +161,14 @@ class PriceCalculatedFormatterTest extends OrderKernelTestBase {
     $variation_build = $this->viewBuilder->view($this->firstVariation);
     $this->render($variation_build);
     $this->assertEscaped('$3.60');
+    // The test commerce-price-calculated template outputs the adjustments as
+    // well.
+    $this->assertEscaped('Tax: $0.60');
 
     $variation_build = $this->viewBuilder->view($this->secondVariation);
     $this->render($variation_build);
     $this->assertEscaped('$4.80');
+    $this->assertEscaped('Tax: $0.80');
 
     $variation_display->setComponent('price', [
       'label' => 'above',
@@ -177,10 +185,14 @@ class PriceCalculatedFormatterTest extends OrderKernelTestBase {
     $variation_build = $this->viewBuilder->view($this->firstVariation);
     $this->render($variation_build);
     $this->assertEscaped('$1.80');
+    $this->assertEscaped('Discount: -$1.80');
+    $this->assertEscaped('Tax: $0.60');
 
     $variation_build = $this->viewBuilder->view($this->secondVariation);
     $this->render($variation_build);
     $this->assertEscaped('$2.40');
+    $this->assertEscaped('Discount: -$2.40');
+    $this->assertEscaped('Tax: $0.80');
   }
 
 }

@@ -1,0 +1,14 @@
+name: 'Commerce File'
+type: module
+description: 'Provides the ability to sell access to files.'
+package: 'Commerce (contrib)'
+configure: commerce_file.settings_form
+core_version_requirement: ^8.8 || ^9
+dependencies:
+  - commerce_license:commerce_license
+  - drupal:file
+
+# Information added by Drupal.org packaging script on 2021-05-05
+version: '8.x-2.0-beta3'
+project: 'commerce_file'
+datestamp: 1620222710

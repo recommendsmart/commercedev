@@ -31,6 +31,13 @@ class OrderAddForm extends FormBase {
   protected $storeStorage;
 
   /**
+   * The user storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $userStorage;
+
+  /**
    * Constructs a new OrderAddForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -39,6 +46,7 @@ class OrderAddForm extends FormBase {
   public function __construct(EntityTypeManagerInterface $entity_type_manager) {
     $this->orderStorage = $entity_type_manager->getStorage('commerce_order');
     $this->storeStorage = $entity_type_manager->getStorage('commerce_store');
+    $this->userStorage = $entity_type_manager->getStorage('user');
   }
 
   /**
@@ -60,7 +68,7 @@ class OrderAddForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Skip building the form if there are no available stores.
-    $store_query = $this->storeStorage->getQuery();
+    $store_query = $this->storeStorage->getQuery()->accessCheck(TRUE);
     if ($store_query->count()->execute() == 0) {
       $link = Link::createFromRoute('Add a new store.', 'entity.commerce_store.add_page');
       $form['warning'] = [
@@ -118,6 +126,13 @@ class OrderAddForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $this->validateCustomerForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->submitCustomerForm($form, $form_state);
 
@@ -133,6 +148,8 @@ class OrderAddForm extends FormBase {
     }
     $order = $this->orderStorage->create($order_data);
     $order->save();
+    $values['order_id'] = $order->id();
+    $form_state->setValues($values);
     // Redirect to the edit form to complete the order.
     $form_state->setRedirect('entity.commerce_order.edit_form', ['commerce_order' => $order->id()]);
   }

@@ -47,7 +47,7 @@ class AddToCartMultilingualTest extends CartWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'language',
     'content_translation',
   ];
@@ -57,7 +57,7 @@ class AddToCartMultilingualTest extends CartWebDriverTestBase {
    *
    * @see \Drupal\Tests\content_translation\Functional\ContentTranslationTestBase
    */
-  public function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->setupMultilingual();

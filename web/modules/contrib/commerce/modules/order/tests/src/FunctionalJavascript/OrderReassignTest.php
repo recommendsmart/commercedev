@@ -21,7 +21,7 @@ class OrderReassignTest extends OrderWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
     'commerce_order',
     'inline_entity_form',
@@ -40,7 +40,7 @@ class OrderReassignTest extends OrderWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $order_item = $this->createEntity('commerce_order_item', [

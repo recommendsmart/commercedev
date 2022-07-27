@@ -37,14 +37,14 @@ class CanadianSalesTaxTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_tax',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['commerce_tax']);
@@ -120,6 +120,19 @@ class CanadianSalesTaxTest extends OrderKernelTestBase {
   }
 
   /**
+   * @covers ::getZones
+   */
+  public function testGetZones() {
+    /** @var \Drupal\commerce_tax\Plugin\Commerce\TaxType\LocalTaxTypeInterface $plugin */
+    $plugin = $this->taxType->getPlugin();
+    $zones = $plugin->getZones();
+    $this->assertArrayHasKey('ca', $zones);
+    $this->assertArrayHasKey('bc', $zones);
+    $this->assertArrayHasKey('mb', $zones);
+    $this->assertArrayHasKey('nb', $zones);
+  }
+
+  /**
    * Builds an order for testing purposes.
    *
    * @return \Drupal\commerce_order\Entity\OrderInterface
@@ -133,6 +146,7 @@ class CanadianSalesTaxTest extends OrderKernelTestBase {
         'country_code' => 'CA',
       ],
       'prices_include_tax' => FALSE,
+      'tax_registrations' => ['CA'],
     ]);
     $store->save();
     $customer_profile = Profile::create([

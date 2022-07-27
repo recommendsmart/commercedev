@@ -19,7 +19,7 @@ class ViewsIntegrationTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'address',
     'entity_reference_revisions',
     'profile',
@@ -34,7 +34,7 @@ class ViewsIntegrationTest extends OrderKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_payment');

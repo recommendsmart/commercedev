@@ -79,6 +79,11 @@ function search_api_views_data() {
           if ($datasource = $field->getDatasource()) {
             $field_definition['group'] = t('@datasource datasource', ['@datasource' => $datasource->label()]);
           }
+          else {
+            // Backend defined fields that don't have a datasource should be
+            // treated like special fields.
+            $field_definition['group'] = t('Search');
+          }
           if ($field_id != $field_alias) {
             $field_definition['real field'] = $field_id;
           }
@@ -155,6 +160,7 @@ function search_api_views_plugins_row_alter(array &$plugins) {
   }
 
   $plugins['search_api']['base'] = $bases;
+  $plugins['search_api_data']['base'] = $bases;
 }
 
 /**
@@ -395,13 +401,13 @@ function _search_api_views_handler_mapping() {
     ];
 
     $alter_id = 'search_api_views_handler_mapping';
-    $description = 'This hook is deprecated in search_api 8.x-1.14 and will be removed in 9.x-1.0. Please use the "search_api.mapping_views_handlers" event instead. See https://www.drupal.org/node/3059866';
+    $description = 'This hook is deprecated in search_api:8.x-1.14 and is removed from search_api:2.0.0. Please use the "search_api.mapping_views_handlers" event instead. See https://www.drupal.org/node/3059866';
     \Drupal::moduleHandler()
       ->alterDeprecated($description, $alter_id, $mapping);
 
     $event = new MappingViewsHandlersEvent($mapping);
     \Drupal::getContainer()->get('event_dispatcher')
-      ->dispatch(SearchApiEvents::MAPPING_VIEWS_HANDLERS, $event);
+      ->dispatch($event, SearchApiEvents::MAPPING_VIEWS_HANDLERS);
   }
 
   return $mapping;
@@ -507,6 +513,14 @@ function _search_api_views_data_special_fields(array &$table, IndexInterface $in
   $table[$language_field]['sort']['id'] = 'search_api';
   if ($language_field != 'search_api_language') {
     $table[$language_field]['real field'] = 'search_api_language';
+  }
+
+  $url_field = _search_api_views_find_field_alias('search_api_url', $table);
+  $table[$url_field]['title'] = t('Item URL');
+  $table[$url_field]['help'] = t("The item's URL");
+  $table[$url_field]['field']['id'] = 'search_api';
+  if ($url_field != 'search_api_url') {
+    $table[$url_field]['real field'] = 'search_api_url';
   }
 
   $relevance_field = _search_api_views_find_field_alias('search_api_relevance', $table);
@@ -978,13 +992,13 @@ function _search_api_views_get_field_handler_mapping() {
 
     // Let other modules change or expand this mapping.
     $alter_id = 'search_api_views_field_handler_mapping';
-    $description = 'This hook is deprecated in search_api 8.x-1.14 and will be removed in 9.x-1.0. Please use the "search_api.mapping_views_field_handlers" event instead. See https://www.drupal.org/node/3059866';
+    $description = 'This hook is deprecated in search_api:8.x-1.14 and is removed from search_api:2.0.0. Please use the "search_api.mapping_views_field_handlers" event instead. See https://www.drupal.org/node/3059866';
     \Drupal::moduleHandler()
       ->alterDeprecated($description, $alter_id, $plain_mapping);
 
     $event = new MappingViewsFieldHandlersEvent($plain_mapping);
     \Drupal::getContainer()->get('event_dispatcher')
-      ->dispatch(SearchApiEvents::MAPPING_VIEWS_FIELD_HANDLERS, $event);
+      ->dispatch($event, SearchApiEvents::MAPPING_VIEWS_FIELD_HANDLERS);
 
     // Then create a new, more practical structure, with the mappings grouped by
     // mapping type.

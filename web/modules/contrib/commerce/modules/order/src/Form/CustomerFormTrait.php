@@ -5,7 +5,6 @@ namespace Drupal\commerce_order\Form;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\user\Entity\User;
 
 /**
  * Provides a form for selecting the order's customer (uid and mail fields).
@@ -13,6 +12,13 @@ use Drupal\user\Entity\User;
  * Used when adding a new order or reassigning an existing one.
  */
 trait CustomerFormTrait {
+
+  /**
+   * The user storage.
+   *
+   * @var \Drupal\Core\Entity\EntityStorageInterface
+   */
+  protected $userStorage;
 
   /**
    * Builds the customer form.
@@ -105,6 +111,11 @@ trait CustomerFormTrait {
         '#type' => 'password_confirm',
         '#size' => 25,
       ];
+
+      $form['customer']['notify'] = [
+        '#type' => 'checkbox',
+        '#title' => t('Notify user of new account'),
+      ];
     }
 
     return $form;
@@ -118,27 +129,53 @@ trait CustomerFormTrait {
   }
 
   /**
-   * Submit handler for the customer select form.
+   * Validation handler for the customer select form.
    *
    * @param array $form
    *   The parent form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitCustomerForm(array &$form, FormStateInterface $form_state) {
+  public function validateCustomerForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    if ($values['customer_type'] == 'existing') {
-      $values['mail'] = User::load($values['uid'])->getEmail();
-    }
-    else {
-      $user = User::create([
+    if (isset($values['mail'], $values['customer_type']) && $values['customer_type'] == 'new') {
+      /** @var \Drupal\user\UserInterface $user */
+      $user = $this->userStorage->create([
         'name' => $values['mail'],
         'mail' => $values['mail'],
         'pass' => ($values['generate']) ? user_password() : $values['pass'],
         'status' => TRUE,
       ]);
+      $form_state->set('customer', $user);
+      $violations = $user->validate();
+
+      foreach ($violations->getByFields(['mail']) as $violation) {
+        $form_state->setErrorByName(str_replace('.', '][', $violation->getPropertyPath()), $violation->getMessage());
+      }
+    }
+  }
+
+  /**
+   * Submit handler for the customer select form.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the parent form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public function submitCustomerForm(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+    if ($values['customer_type'] == 'existing') {
+      $values['mail'] = $this->userStorage->load($values['uid'])->getEmail();
+    }
+    else {
+      $user = $form_state->get('customer');
       $user->save();
       $values['uid'] = $user->id();
+
+      if ($values['notify']) {
+        _user_mail_notify('register_admin_created', $user);
+      }
     }
 
     $form_state->setValues($values);

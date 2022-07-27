@@ -1,0 +1,55 @@
+{
+  "address": {
+    "textCase": "Mixed",
+    "line1": "512 S Mangum St",
+    "city": "Durham",
+    "region": "NC",
+    "country": "US",
+    "postalCode": "27701-3973"
+  },
+  "validatedAddresses": [
+    {
+      "addressType": "HighRiseOrBusinessComplex",
+      "line1": "512 S Mangum St",
+      "line2": "",
+      "line3": "",
+      "city": "Durham",
+      "region": "NC",
+      "country": "US",
+      "postalCode": "27701-3973",
+      "latitude": 35.991421,
+      "longitude": -78.902621
+    }
+  ],
+  "coordinates": {
+    "latitude": 35.991421,
+    "longitude": -78.902621
+  },
+  "resolutionQuality": "Intersection",
+  "taxAuthorities": [
+    {
+      "avalaraId": "37",
+      "jurisdictionName": "NORTH CAROLINA",
+      "jurisdictionType": "State",
+      "signatureCode": "BAAI"
+    },
+    {
+      "avalaraId": "37063",
+      "jurisdictionName": "DURHAM",
+      "jurisdictionType": "County",
+      "signatureCode": "BAYU"
+    },
+    {
+      "avalaraId": "2001060488",
+      "jurisdictionName": "DURHAM CO TR",
+      "jurisdictionType": "Special",
+      "signatureCode": "EKDA"
+    },
+    {
+      "avalaraId": "2001064487",
+      "jurisdictionName": "DURHAM",
+      "jurisdictionType": "City",
+      "signatureCode": "MCFQ"
+    }
+  ]
+}

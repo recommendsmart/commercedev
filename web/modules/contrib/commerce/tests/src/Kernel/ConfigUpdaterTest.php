@@ -14,7 +14,7 @@ class ConfigUpdaterTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_update_test',
   ];
 
@@ -28,7 +28,7 @@ class ConfigUpdaterTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig('commerce_update_test');

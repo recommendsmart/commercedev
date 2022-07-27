@@ -9,7 +9,7 @@ dependencies:
     - belgrade
 id: belgrade_account_menu
 theme: belgrade
-region: top_navigation
+region: top_bar
 weight: -6
 provider: null
 plugin: 'system_menu_block:account'

@@ -33,7 +33,7 @@ abstract class CartWebDriverTestBase extends OrderWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_cart',
     'commerce_cart_test',
     'node',
@@ -53,10 +53,10 @@ abstract class CartWebDriverTestBase extends OrderWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
-    $this->cart = $this->container->get('commerce_cart.cart_provider')->createCart('default');
+    $this->cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store);
     $this->cartManager = $this->container->get('commerce_cart.cart_manager');
     $this->attributeFieldManager = $this->container->get('commerce_product.attribute_field_manager');
   }

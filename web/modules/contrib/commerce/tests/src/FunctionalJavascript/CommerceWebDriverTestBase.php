@@ -43,7 +43,7 @@ abstract class CommerceWebDriverTestBase extends WebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'block',
     'field',
@@ -67,7 +67,7 @@ abstract class CommerceWebDriverTestBase extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     $this->setErrorHandler();
     parent::setUp();
 

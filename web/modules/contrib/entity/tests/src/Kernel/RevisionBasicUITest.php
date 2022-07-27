@@ -16,18 +16,18 @@ class RevisionBasicUITest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['entity_module_test', 'system', 'user', 'entity'];
+  protected static $modules = ['entity_module_test', 'system', 'user', 'entity'];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('user');
     $this->installEntitySchema('entity_test_enhanced');
     $this->installSchema('system', 'sequences');
-    $this->installConfig(['system']);
+    $this->installConfig(['system', 'user']);
 
     $this->container->get('router.builder')->rebuild();
 
@@ -65,11 +65,17 @@ class RevisionBasicUITest extends KernelTestBase {
     $response = $http_kernel->handle($request);
     $this->assertEquals(403, $response->getStatusCode());
 
-    $role_admin = Role::create(['id' => 'test_role_admin']);
+    $role_admin = Role::create([
+      'id' => 'test_role_admin',
+      'label' => 'Test role admin',
+    ]);
     $role_admin->grantPermission('administer entity_test_enhanced');
     $role_admin->save();
 
-    $role = Role::create(['id' => 'test_role']);
+    $role = Role::create([
+      'id' => 'test_role',
+      'label' => 'Test role',
+    ]);
     $role->grantPermission('view all entity_test_enhanced revisions');
     $role->grantPermission('administer entity_test_enhanced');
     $role->save();
@@ -134,11 +140,17 @@ class RevisionBasicUITest extends KernelTestBase {
     $response = $http_kernel->handle($request);
     $this->assertEquals(403, $response->getStatusCode());
 
-    $role_admin = Role::create(['id' => 'test_role_admin']);
+    $role_admin = Role::create([
+      'id' => 'test_role_admin',
+      'label' => 'Test role admin',
+    ]);
     $role_admin->grantPermission('administer entity_test_enhanced');
     $role_admin->save();
 
-    $role = Role::create(['id' => 'test_role']);
+    $role = Role::create([
+      'id' => 'test_role',
+      'label' => 'Test role',
+    ]);
     $role->grantPermission('view all entity_test_enhanced revisions');
     $role->grantPermission('administer entity_test_enhanced');
     $role->save();
@@ -164,8 +176,8 @@ class RevisionBasicUITest extends KernelTestBase {
     $request = Request::create($revision->toUrl('revision')->toString());
     $response = $http_kernel->handle($request);
     $this->assertEquals(200, $response->getStatusCode());
-    $this->assertNotContains('rev 1', $response->getContent());
-    $this->assertContains('rev 2', $response->getContent());
+    $this->assertStringNotContainsString('rev 1', $response->getContent());
+    $this->assertStringContainsString('rev 2', $response->getContent());
   }
 
   public function testRevisionRevert() {
@@ -179,7 +191,10 @@ class RevisionBasicUITest extends KernelTestBase {
     $entity->isDefaultRevision(TRUE);
     $entity->save();
 
-    $role = Role::create(['id' => 'test_role']);
+    $role = Role::create([
+      'id' => 'test_role',
+      'label' => 'Test role',
+    ]);
     $role->grantPermission('administer entity_test_enhanced');
     $role->grantPermission('revert all entity_test_enhanced revisions');
     $role->save();

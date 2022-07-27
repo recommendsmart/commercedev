@@ -1,50 +1,41 @@
-# Belgrade
-Belgrade is a Bootstrap subtheme made for Drupal Commerce 2.0.
+## CONTENTS OF THIS FILE
 
+- Introduction
+- Requirements
+- Recommended modules
+- Installation
+- Configuration
+- Maintainers
 
-Any questions or feedback?
-[Create an issue on drupal.org](https://www.drupal.org/project/issues/belgrade)
+## INTRODUCTION
 
+Belgrade is a Bootstrap based theme made for Drupal Commerce 2.0.
 
-# Getting started with Belgrade
+The Belgrade theme was designed and built around functionality provided by the Commerce Demo module. As a result, it has styling that targets specific components that the theme itself is unable to provide.
 
-## Built for [Commerce Demo](https://www.drupal.org/project/commerce_demo)
+- An entity view mode for Commerce Product with the machine name `catalog`.
+- Belgrade provides styling for a menu with the machine name `catalog`.
+- A product catalog built with Views and the machine name `product_catalog`, using the `catalog` view mode for products.
+- An image field on Commerce Product Variation bundles with the machine name `field_images`
 
-The Belgrade theme was designed and built around functionality provieded by the Commerce Demo module. As a
-result, it has styling that targets specific components that the theme itself is unable to provide.
+* For a full description of the theme, visit the project page: https://www.drupal.org/project/belgrade
 
-* An entity view mode for Commerce Product with the machine name `catalog`.
-* Belgrade provides styling for a menu with the machine name `catalog`.
-* A product catalog built with Views and the machine name `product_catalog`, using the `catalog` view mode for products.
-* An image field on Commerce Product Variation bundles with the machine name `field_images`
+* To submit bug reports and feature suggestions, or track changes: https://www.drupal.org/project/issues/belgrade
 
-### Enable Drupal debbuging
-Need a few words on enabling Drupal debugging
+## REQUIREMENTS
 
-### Working with Gulp
+- This theme requires [Commerce Demo] https://www.drupal.org/project/commerce_demo
 
-1. [Install Yarn](https://yarnpkg.com/en/docs/install),
+## INSTALLATION
 
-2. [Install the Gulp cli tool](https://gulpjs.com/),
+- Install as you would normally install a contributed Drupal theme. Visit https://www.drupal.org/node/1897420 for further information.
 
-3. The package.json file contains all the npm packages you need. To install run:
-    ```
-    yarn install
-    ```
+## CONFIGURATION
 
-4. Configuration for all gulp tasks is located in ./gulp.js/config.js file.
-   To make BrowserSync work edit the line:
-    ```
-    localUrl = 'http://localhost';
-    ```
+- First Install [Commerce Demo] https://www.drupal.org/project/commerce_demo then from Appearance settings install the theme.
 
-5. Do start developing run:
-    ```
-    yarn(or npm) run start
-    ```
-    Which will start the gulp watch task.
+## MAINTAINERS
 
-6. To generate icons from a set of svg files with a matching SCSS file, run a npm script:
-    ```
-    yarn(or npm) run icons
-    ```
+Current maintainers:
+
+- Ivan Buišić (majmunbog) - https://www.drupal.org/u/majmunbog

@@ -18,7 +18,7 @@ class PriceEqualsTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_price_test',
     'commerce_product',
   ];
@@ -36,7 +36,7 @@ class PriceEqualsTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_product_attribute');

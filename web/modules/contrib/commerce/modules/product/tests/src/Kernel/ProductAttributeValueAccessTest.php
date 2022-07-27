@@ -19,7 +19,7 @@ class ProductAttributeValueAccessTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'path',
     'commerce_product',
   ];
@@ -27,7 +27,7 @@ class ProductAttributeValueAccessTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_product_attribute');

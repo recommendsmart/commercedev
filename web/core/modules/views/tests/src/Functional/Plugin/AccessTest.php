@@ -27,7 +27,7 @@ class AccessTest extends ViewTestBase {
    *
    * @var array
    */
-  public static $modules = ['node'];
+  protected static $modules = ['node'];
 
   /**
    * {@inheritdoc}
@@ -48,17 +48,19 @@ class AccessTest extends ViewTestBase {
    */
   protected $normalUser;
 
-  protected function setUp($import_test_views = TRUE) {
-    parent::setUp($import_test_views);
+  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
+    parent::setUp($import_test_views, $modules);
 
     $this->enableViewsTestModule();
 
-    ViewTestData::createTestViews(get_class($this), ['views_test_data']);
+    ViewTestData::createTestViews(static::class, ['views_test_data']);
 
     $this->webUser = $this->drupalCreateUser();
 
     $normal_role = $this->drupalCreateRole([]);
-    $this->normalUser = $this->drupalCreateUser(['views_test_data test permission']);
+    $this->normalUser = $this->drupalCreateUser([
+      'views_test_data test permission',
+    ]);
     $this->normalUser->addRole($normal_role);
     // @todo when all the plugin information is cached make a reset function and
     // call it here.

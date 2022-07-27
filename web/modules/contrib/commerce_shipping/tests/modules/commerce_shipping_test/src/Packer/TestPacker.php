@@ -6,6 +6,7 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_shipping\Packer\PackerInterface;
 use Drupal\commerce_shipping\ProposedShipment;
 use Drupal\commerce_shipping\ShipmentItem;
+use Drupal\physical\Calculator;
 use Drupal\physical\Weight;
 use Drupal\physical\WeightUnit;
 use Drupal\profile\Entity\ProfileInterface;
@@ -42,12 +43,15 @@ class TestPacker implements PackerInterface {
       }
 
       $quantity = $order_item->getQuantity();
+      if (Calculator::compare($order_item->getQuantity(), '0') == 0) {
+        continue;
+      }
       /** @var \Drupal\physical\Weight $weight */
       $weight = $purchased_entity->get('weight')->first()->toMeasurement();
       $proposed_shipments[] = new ProposedShipment([
         'type' => 'default',
         'order_id' => $order->id(),
-        'title' => t('Shipment #@index', ['@index' => $index + 1]),
+        'title' => sprintf('Shipment #%d', $index + 1),
         'items' => [
           new ShipmentItem([
             'order_item_id' => $order_item->id(),

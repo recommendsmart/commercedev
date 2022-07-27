@@ -41,15 +41,18 @@ class OrderAssignment implements OrderAssignmentInterface {
   /**
    * {@inheritdoc}
    */
-  public function assign(OrderInterface $order, UserInterface $customer) {
+  public function assign(OrderInterface $order, UserInterface $customer, $save_order = TRUE) {
     // Notify other modules before the order is modified, so that
     // subscribers have access to the original data.
     $event = new OrderAssignEvent($order, $customer);
-    $this->eventDispatcher->dispatch(OrderEvents::ORDER_ASSIGN, $event);
+    $this->eventDispatcher->dispatch($event, OrderEvents::ORDER_ASSIGN);
 
     $order->setCustomer($customer);
     $order->setEmail($customer->getEmail());
-    $order->save();
+
+    if ($save_order) {
+      $order->save();
+    }
   }
 
   /**

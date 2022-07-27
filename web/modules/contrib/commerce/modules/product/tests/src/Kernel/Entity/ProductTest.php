@@ -21,7 +21,7 @@ class ProductTest extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'path',
     'commerce_product',
   ];
@@ -36,7 +36,7 @@ class ProductTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_product_variation');
@@ -98,16 +98,16 @@ class ProductTest extends CommerceKernelTestBase {
     $this->assertEquals($this->user, $product->getOwner());
     $this->assertEquals($this->user->id(), $product->getOwnerId());
 
-    $this->assertEquals([
+    $this->assertEqualsCanonicalizing([
       'store',
       'url.query_args:v',
     ], $product->getCacheContexts());
 
     // Ensure that we don't store a broken reference to the product owner.
     $product->setOwnerId(900);
-    $this->assertEqual($product->getOwnerId(), 900);
+    $this->assertEquals(900, $product->getOwnerId());
     $product->save();
-    $this->assertEqual($product->getOwnerId(), 0);
+    $this->assertEquals(0, $product->getOwnerId());
   }
 
   /**
@@ -163,6 +163,7 @@ class ProductTest extends CommerceKernelTestBase {
     $this->assertNotEmpty($product->hasVariation($variation1));
 
     $this->assertEquals($product->getDefaultVariation(), $variation2);
+    $this->assertEquals($variation2, $product->get('default_variation')->entity);
     $this->assertNotEquals($product->getDefaultVariation(), $variation1);
 
     // Confirm that postSave() sets the product_id on each variation.

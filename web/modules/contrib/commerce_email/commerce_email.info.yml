@@ -1,0 +1,13 @@
+name: Commerce Email
+type: module
+description: 'Provides a UI for defining emails to send in response to various Drupal Commerce events.'
+package: Commerce (contrib)
+core_version_requirement: ^8.9 || ^9
+dependencies:
+  - commerce:commerce
+  - token:token
+
+# Information added by Drupal.org packaging script on 2022-03-12
+version: '8.x-1.0-beta2'
+project: 'commerce_email'
+datestamp: 1647059067

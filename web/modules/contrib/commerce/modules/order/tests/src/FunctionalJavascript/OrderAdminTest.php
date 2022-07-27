@@ -50,7 +50,7 @@ class OrderAdminTest extends OrderWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->store->set('billing_countries', ['FR', 'US']);
@@ -91,7 +91,12 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     ];
     $this->submitForm($edit, t('Create'));
 
+    $this->getSession()->getPage()->pressButton('add_billing_information');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertSession()->buttonExists('hide_profile_form');
     $this->assertRenderedAddress($this->defaultAddress, 'billing_profile[0][profile]');
+    $this->getSession()->getPage()->pressButton('hide_profile_form');
+    $this->assertSession()->assertWaitOnAjaxRequest();
     // Test that commerce_order_test_field_widget_form_alter() has the expected
     // outcome.
     $this->assertSame([], \Drupal::state()->get("commerce_order_test_field_widget_form_alter"));
@@ -100,9 +105,16 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $page = $this->getSession()->getPage();
 
     // First item with overriding the price.
-    $entity1 = $this->variation->getSku() . ' (' . $this->variation->id() . ')';
-    $page->checkField('Override the unit price');
-    $page->fillField('order_items[form][0][purchased_entity][0][target_id]', $entity1);
+    $this->getSession()->getPage()->checkField('Override the unit price');
+    $purchased_entity_field = $this->assertSession()->waitForElement('css', '[name="order_items[form][0][purchased_entity][0][target_id]"].ui-autocomplete-input');
+    $purchased_entity_field->setValue(substr($this->variation->getSku(), 0, 4));
+    $this->getSession()->getDriver()->keyDown($purchased_entity_field->getXpath(), ' ');
+    $this->assertSession()->waitOnAutocomplete();
+    $this->assertSession()->pageTextContains($this->variation->getSku());
+    $this->assertCount(1, $this->getSession()->getPage()->findAll('css', '.ui-autocomplete li'));
+    $this->getSession()->getPage()->find('css', '.ui-autocomplete li:first-child a')->click();
+    $this->assertSession()->fieldValueEquals('order_items[form][0][purchased_entity][0][target_id]', $this->variation->getSku() . ': ' . $this->variation->label() . ' (' . $this->variation->id() . ')');
+
     $page->fillField('order_items[form][0][quantity][0][value]', '1');
     $this->getSession()->getPage()->pressButton('Create order item');
     $this->assertSession()->assertWaitOnAjaxRequest();
@@ -137,9 +149,13 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     // There is no adjustment - the order should save successfully.
     $this->submitForm([], 'Save');
     $this->assertSession()->pageTextContains('The order has been successfully saved.');
+    $order = Order::load(1);
+    $this->assertNull($order->getBillingProfile());
 
     // Use an adjustment that is not locked by default.
-    $this->clickLink('Edit');
+    $this->drupalGet($order->toUrl('edit-form'));
+    $this->getSession()->getPage()->pressButton('add_billing_information');
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $edit = [
       'adjustments[0][type]' => 'fee',
       'adjustments[0][definition][label]' => '',
@@ -155,7 +171,7 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $order_number = $this->getSession()->getPage()->findAll('css', 'tr td.views-field-order-number');
     $this->assertEquals(1, count($order_number));
 
-    $order = Order::load(1);
+    $order = $this->reloadEntity($order);
     $this->assertEquals(2, count($order->getItems()));
     $this->assertEquals(new Price('10.88', 'USD'), $order->getTotalPrice());
     $this->assertCount(1, $order->getAdjustments());
@@ -220,6 +236,7 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $order->save();
 
     $this->drupalGet($order->toUrl('edit-form'));
+    $this->assertSession()->buttonNotExists('hide_profile_form');
     $this->assertSession()->fieldValueEquals('adjustments[0][definition][label]', '10% off');
     $this->assertSession()->fieldValueEquals('adjustments[1][definition][label]', 'Handling fee');
     $this->assertSession()->optionExists('adjustments[2][type]', 'Custom');
@@ -302,6 +319,7 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $order = $this->createEntity('commerce_order', [
       'type' => 'default',
       'mail' => $this->loggedInUser->getEmail(),
+      'order_number' => '11111',
       'uid' => $this->loggedInUser,
       'store_id' => $this->store,
     ]);
@@ -326,6 +344,7 @@ class OrderAdminTest extends OrderWebDriverTestBase {
       'mail' => $this->loggedInUser->getEmail(),
       'uid' => $this->loggedInUser,
       'store_id' => $this->store,
+      'order_number' => '11111',
       'locked' => TRUE,
     ]);
     $this->drupalGet($order->toUrl('unlock-form'));
@@ -408,11 +427,21 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $workflow = $order->getState()->getWorkflow();
     $transitions = $workflow->getAllowedTransitions($order->getState()->getId(), $order);
     foreach ($transitions as $transition) {
-      $this->assertSession()->buttonExists($transition->getLabel());
+      $this->assertSession()->linkExists($transition->getLabel());
     }
-    $this->click('input.js-form-submit#edit-place');
-    $this->assertSession()->buttonNotExists('Place order');
-    $this->assertSession()->buttonNotExists('Cancel order');
+    $this->click('a.button#edit-place');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertSession()->pageTextContains('Are you sure you want to apply this transition?');
+    $this->assertSession()->linkExists('Cancel');
+    $this->assertSession()->buttonExists('Confirm');
+    // Note, there is some odd behavior calling the `press()` method on the
+    // button, so after asserting it exists, click via this method.
+    $this->click('button:contains("Confirm")');
+    $this->assertSession()->linkNotExists('Place order');
+    $this->assertSession()->linkNotExists('Cancel order');
+
+    // The order was modified and needs to be reloaded.
+    $order = $this->reloadEntity($order);
 
     // Add an order item, confirm that it is displayed.
     $order_item = $this->createEntity('commerce_order_item', [
@@ -434,6 +463,25 @@ class OrderAdminTest extends OrderWebDriverTestBase {
     $this->drupalLogout();
     $this->drupalGet($order->toUrl()->toString());
     $this->assertSession()->pageTextContains('Access denied');
+  }
+
+  /**
+   * Tests creating a new customer with same email used by an existing customer.
+   */
+  public function testCreateOrderNewCustomer() {
+    $email = 'guest@example.com';
+    $this->createUser([], $this->randomString(), FALSE, ['mail' => $email]);
+
+    $this->drupalGet('/admin/commerce/orders');
+    $this->getSession()->getPage()->clickLink('Create a new order');
+    $this->getSession()->getPage()->selectFieldOption('customer_type', 'new');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $edit = [
+      'customer_type' => 'new',
+      'mail' => $email,
+    ];
+    $this->submitForm($edit, t('Create'));
+    $this->assertSession()->pageTextContains('The email address guest@example.com is already taken.');
   }
 
 }

@@ -1,0 +1,12 @@
+name: Commerce Braintree
+type: module
+description: 'Provides Commerce integration for Braintree Payments.'
+package: Commerce (contrib)
+core_version_requirement: ^8.8 || ^9
+dependencies:
+  - commerce:commerce_payment
+
+# Information added by Drupal.org packaging script on 2020-12-31
+version: '8.x-1.3'
+project: 'commerce_braintree'
+datestamp: 1609434548

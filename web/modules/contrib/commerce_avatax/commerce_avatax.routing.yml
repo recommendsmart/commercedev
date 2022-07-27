@@ -1,0 +1,16 @@
+commerce_avatax.config_settings:
+  path: '/admin/commerce/config/avatax'
+  defaults:
+    _form: 'Drupal\commerce_avatax\Form\ConfigSettingsForm'
+    _title: 'Commerce AvaTax settings'
+  requirements:
+    _permission: 'administer commerce_avatax'
+commerce_avatax.address_validator:
+  path: '/commerce-avatax/address-validator'
+  defaults:
+    _controller: 'Drupal\commerce_avatax\Controller\AddressValidator::process'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+    _format: 'json'
+    _csrf_token: 'TRUE'

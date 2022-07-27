@@ -1,10 +1,6 @@
 <?php
 
-/**
- * @see       https://github.com/laminas/laminas-diactoros for the canonical source repository
- * @copyright https://github.com/laminas/laminas-diactoros/blob/master/COPYRIGHT.md
- * @license   https://github.com/laminas/laminas-diactoros/blob/master/LICENSE.md New BSD License
- */
+declare(strict_types=1);
 
 namespace Laminas\Diactoros;
 
@@ -15,14 +11,10 @@ use function stream_get_contents;
  */
 class PhpInputStream extends Stream
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $cache = '';
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $reachedEof = false;
 
     /**
@@ -36,7 +28,7 @@ class PhpInputStream extends Stream
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->reachedEof) {
             return $this->cache;
@@ -49,7 +41,7 @@ class PhpInputStream extends Stream
     /**
      * {@inheritdoc}
      */
-    public function isWritable()
+    public function isWritable(): bool
     {
         return false;
     }
@@ -57,7 +49,7 @@ class PhpInputStream extends Stream
     /**
      * {@inheritdoc}
      */
-    public function read($length)
+    public function read($length): string
     {
         $content = parent::read($length);
         if (! $this->reachedEof) {
@@ -74,7 +66,7 @@ class PhpInputStream extends Stream
     /**
      * {@inheritdoc}
      */
-    public function getContents($maxLength = -1)
+    public function getContents($maxLength = -1): string
     {
         if ($this->reachedEof) {
             return $this->cache;

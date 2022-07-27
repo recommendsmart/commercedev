@@ -1,0 +1,72 @@
+@import "global";
+
+$primary: #41449f;
+$light: #f8f9fa;
+$dark: #272727;
+
+$beo-colors: (
+  "primary": $primary,
+  "light": $light,
+  "dark": $dark
+);
+
+// Root.
+:root {
+  --#{$variable-prefix}body-bg: #fff;
+  --#{$variable-prefix}body-color: #333;
+  --#{$variable-prefix}primary-hover: #373a87;
+  @each $color, $value in $beo-colors {
+    --#{$variable-prefix}#{$color}: #{$value};
+  }
+}
+
+// Reboot.
+body {
+  background-color: var(--#{$variable-prefix}body-bg);
+  color: var(--#{$variable-prefix}body-color);
+}
+
+// Text and link Color.
+@each $color, $value in $beo-colors {
+  .text-#{$color} {
+    color: $value !important;
+  }
+  .bg-#{$color} {
+    background-color: $value !important;
+  }
+}
+
+// Primary Button.
+.btn-primary {
+  background-color: var(--#{$variable-prefix}primary);
+  border-color: var(--#{$variable-prefix}primary);
+  &:focus,
+  &:hover {
+    background-color: var(--#{$variable-prefix}primary-hover);
+    border-color: var(--#{$variable-prefix}primary-hover);
+  }
+}
+
+.btn-outline-primary,
+.btn-outline-primary:focus {
+  border-color: var(--#{$variable-prefix}primary);
+  color: var(--#{$variable-prefix}primary);
+  &:active,
+  &:hover {
+    color: white;
+    background-color: var(--#{$variable-prefix}primary);
+    border-color: var(--#{$variable-prefix}primary);
+  }
+}
+
+// Avoid box shadow on buttons
+.btn-check:focus + .btn-primary,
+.product--rendered-attribute .form-radio:focus + .btn-primary,
+.btn-primary:focus,
+.btn-primary:active:focus,
+.btn-check:focus + .btn-outline-primary,
+.product--rendered-attribute .form-radio:focus + .btn-outline-primary,
+.btn-outline-primary:active:focus,
+.btn-outline-primary:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+}

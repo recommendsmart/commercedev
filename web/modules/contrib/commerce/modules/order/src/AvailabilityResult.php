@@ -2,6 +2,8 @@
 
 namespace Drupal\commerce_order;
 
+use Drupal\Component\Render\MarkupInterface;
+
 /**
  * Provides a value object representing the "availability" of an order item.
  */
@@ -31,7 +33,7 @@ final class AvailabilityResult {
    */
   public function __construct($result, $reason = NULL) {
     assert(is_bool($result));
-    assert(is_string($reason) || is_null($reason));
+    assert(is_string($reason) || is_null($reason) || $reason instanceof MarkupInterface);
     $this->result = $result;
     $this->reason = $reason;
   }
@@ -54,7 +56,6 @@ final class AvailabilityResult {
    * @return static
    */
   public static function unavailable($reason = NULL) : AvailabilityResult {
-    assert(is_string($reason) || is_null($reason));
     return new static(FALSE, $reason);
   }
 

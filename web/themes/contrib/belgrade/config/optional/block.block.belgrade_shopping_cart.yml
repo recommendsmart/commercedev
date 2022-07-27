@@ -7,8 +7,8 @@ dependencies:
     - belgrade
 id: belgrade_shopping_cart
 theme: belgrade
-region: top_navigation
-weight: -5
+region: top_bar
+weight: -10
 provider: null
 plugin: commerce_cart
 settings:

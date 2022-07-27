@@ -37,7 +37,7 @@ class TaxNumberTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_product',
     'commerce_order',
     'commerce_tax',
@@ -62,7 +62,7 @@ class TaxNumberTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->store->set('billing_countries', ['RS', 'ME', 'MK']);

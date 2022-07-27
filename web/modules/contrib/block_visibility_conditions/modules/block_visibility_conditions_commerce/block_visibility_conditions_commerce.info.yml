@@ -1,0 +1,13 @@
+name: 'Block Visibility Conditions Commerce'
+description: 'Provides some extra block visibility conditions for Commerce.'
+type: module
+core: 8.x
+core_version_requirement: ^8 || ^9
+dependencies:
+  - commerce:commerce_product
+# version: 8.x-1.x-dev
+
+# Information added by Drupal.org packaging script on 2020-04-22
+version: '8.x-1.0'
+project: 'block_visibility_conditions'
+datestamp: 1587513848

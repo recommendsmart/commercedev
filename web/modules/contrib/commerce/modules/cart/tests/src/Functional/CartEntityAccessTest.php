@@ -2,10 +2,11 @@
 
 namespace Drupal\Tests\commerce_cart\Functional;
 
-use Behat\Mink\Driver\GoutteDriver;
+use Behat\Mink\Driver\BrowserKitDriver;
 use Behat\Mink\Session;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\Tests\DrupalTestBrowser;
 use Drupal\user\RoleInterface;
 
 /**
@@ -18,14 +19,14 @@ class CartEntityAccessTest extends CartBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_checkout',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     user_role_grant_permissions(RoleInterface::ANONYMOUS_ID, ['access checkout']);
   }
@@ -65,7 +66,8 @@ class CartEntityAccessTest extends CartBrowserTestBase {
     $this->assertSession()->statusCodeEquals(403);
 
     // Anonymous active cart.
-    $this->drupalPostForm('product/' . $this->variation->getProductId(), [], 'Add to cart');
+    $this->drupalGet('product/' . $this->variation->getProductId());
+    $this->submitForm([], 'Add to cart');
 
     $this->mink->setDefaultSessionName('default');
     $this->drupalGet('user/0/orders/3');
@@ -125,7 +127,8 @@ class CartEntityAccessTest extends CartBrowserTestBase {
     $this->assertSession()->statusCodeEquals(403);
 
     // Anonymous active cart.
-    $this->drupalPostForm('product/' . $this->variation->getProductId(), [], 'Add to cart');
+    $this->drupalGet('product/' . $this->variation->getProductId());
+    $this->submitForm([], 'Add to cart');
 
     $this->mink->setDefaultSessionName('default');
     $this->drupalGet('user/0/orders/3');
@@ -196,15 +199,22 @@ class CartEntityAccessTest extends CartBrowserTestBase {
 
     $this->drupalLogin($customer);
     foreach ($cart->getEntityType()->getLinkTemplates() as $rel => $link_template) {
+      if ($rel === 'state-transition-form') {
+        continue;
+      }
       $this->drupalGet($cart->toUrl($rel));
       $this->assertSession()->statusCodeEquals(403);
     }
 
     // Anonymous active cart.
     $this->switchSession('anonymous');
-    $this->drupalPostForm('product/' . $this->variation->getProductId(), [], 'Add to cart');
+    $this->drupalGet('product/' . $this->variation->getProductId());
+    $this->submitForm([], 'Add to cart');
     $cart = Order::load(3);
     foreach ($cart->getEntityType()->getLinkTemplates() as $rel => $link_template) {
+      if ($rel === 'state-transition-form') {
+        continue;
+      }
       $this->drupalGet($cart->toUrl($rel));
       $this->assertSession()->statusCodeEquals(403);
     }
@@ -219,7 +229,8 @@ class CartEntityAccessTest extends CartBrowserTestBase {
   protected function switchSession($name) {
     $create_session = !$this->mink->hasSession($name);
     if ($create_session) {
-      $this->mink->registerSession($name, new Session(new GoutteDriver()));
+      $client = new DrupalTestBrowser();
+      $this->mink->registerSession($name, new Session(new BrowserKitDriver($client)));
     }
     $this->mink->setDefaultSessionName($name);
 

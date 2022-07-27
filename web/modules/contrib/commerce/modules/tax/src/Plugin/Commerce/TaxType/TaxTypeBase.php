@@ -162,7 +162,7 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['display_inclusive'] = [
       '#type' => 'checkbox',
-      '#title' => t('Display taxes of this type inclusive in product prices.'),
+      '#title' => $this->t('Display taxes of this type inclusive in product prices.'),
       '#default_value' => $this->configuration['display_inclusive'],
     ];
 
@@ -245,7 +245,7 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
     $customer_profile = $this->buildCustomerProfile($order);
     // Allow the customer profile to be altered, per order item.
     $event = new CustomerProfileEvent($customer_profile, $order_item);
-    $this->eventDispatcher->dispatch(TaxEvents::CUSTOMER_PROFILE, $event);
+    $this->eventDispatcher->dispatch($event, TaxEvents::CUSTOMER_PROFILE);
     $customer_profile = $event->getCustomerProfile();
 
     return $customer_profile;

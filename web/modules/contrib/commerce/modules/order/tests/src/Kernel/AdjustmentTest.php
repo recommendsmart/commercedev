@@ -14,7 +14,7 @@ class AdjustmentTest extends OrderKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_order_test',
   ];
 
@@ -139,6 +139,11 @@ class AdjustmentTest extends OrderKernelTestBase {
     $this->assertTrue($adjustment->isIncluded());
     $this->assertTrue($adjustment->isLocked());
     $this->assertEquals($definition, $adjustment->toArray());
+
+    // Test adjustment with percentage equals zero.
+    $definition['percentage'] = '0';
+    $adjustment = new Adjustment($definition);
+    $this->assertEquals('0', $adjustment->getPercentage());
   }
 
   /**

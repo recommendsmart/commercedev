@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\commerce_shipping\FunctionalJavascript;
 
+use Drupal\commerce_checkout\Entity\CheckoutFlow;
 use Drupal\commerce_order\Entity\OrderType;
 use Drupal\commerce_payment\Entity\PaymentGateway;
 use Drupal\commerce_product\Entity\ProductVariationType;
@@ -24,7 +25,7 @@ class CartIntegrationTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_cart',
     'commerce_payment',
     'commerce_payment_example',
@@ -43,7 +44,7 @@ class CartIntegrationTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Limit the available countries.
@@ -147,6 +148,12 @@ class CartIntegrationTest extends CommerceWebDriverTestBase {
         ],
       ],
     ]);
+
+    $checkout_flow = CheckoutFlow::load('shipping');
+    $checkout_flow_configuration = $checkout_flow->get('configuration');
+    $checkout_flow_configuration['panes']['shipping_information']['auto_recalculate'] = FALSE;
+    $checkout_flow->set('configuration', $checkout_flow_configuration);
+    $checkout_flow->save();
   }
 
   /**

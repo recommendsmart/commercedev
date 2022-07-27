@@ -9,7 +9,6 @@ use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_payment\PaymentMethodStorageInterface;
 use Drupal\commerce_payment\PaymentOption;
 use Drupal\commerce_payment\PaymentOptionsBuilderInterface;
-use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\PaymentGatewayInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsCreatingPaymentMethodsInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsStoredPaymentMethodsInterface;
 use Drupal\Component\Utility\NestedArray;
@@ -148,7 +147,7 @@ class PaymentInformation extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function buildPaneForm(array $pane_form, FormStateInterface $form_state, array &$complete_form) {
-    if ($this->order->isPaid() || $this->order->getTotalPrice()->isZero()) {
+    if (!$this->order->getTotalPrice() || $this->order->isPaid() || $this->order->getTotalPrice()->isZero()) {
       // No payment is needed if the order is free or has already been paid.
       // In that case, collect just the billing information.
       $pane_form['#title'] = $this->t('Billing information');
@@ -208,15 +207,23 @@ class PaymentInformation extends CheckoutPaneBase {
     // Store the options for submitPaneForm().
     $pane_form['#payment_options'] = $options;
 
-    // If this is an existing payment method, return the pane form.
-    // Editing payment methods at checkout is not supported.
-    if ($default_option->getPaymentMethodId()) {
-      return $pane_form;
-    }
-
     $default_payment_gateway_id = $default_option->getPaymentGatewayId();
     $payment_gateway = $payment_gateways[$default_payment_gateway_id];
     $payment_gateway_plugin = $payment_gateway->getPlugin();
+
+    // If this is an existing payment method, return the pane form.
+    // Editing payment methods at checkout is not supported.
+    if ($default_option->getPaymentMethodId()) {
+      $payment_method_storage = $this->entityTypeManager->getStorage('commerce_payment_method');
+      /** @var \Drupal\commerce_payment\Entity\PaymentMethodInterface $payment_method */
+      $payment_method = $payment_method_storage->load($default_option->getPaymentMethodId());
+      // If the payment method hasn't been tokenized yet, allow updating the
+      // billing information.
+      if (empty($payment_method->getRemoteId()) && $payment_gateway_plugin->collectsBillingInformation()) {
+        $pane_form = $this->buildBillingProfileForm($pane_form, $form_state);
+      }
+      return $pane_form;
+    }
 
     // If this payment gateway plugin supports creating tokenized payment
     // methods before processing payment, we build the "add-payment-method"
@@ -340,7 +347,7 @@ class PaymentInformation extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function validatePaneForm(array &$pane_form, FormStateInterface $form_state, array &$complete_form) {
-    if ($this->order->isPaid() || $this->order->getTotalPrice()->isZero()) {
+    if (!$this->order->getTotalPrice() || $this->order->isPaid() || $this->order->getTotalPrice()->isZero()) {
       return;
     }
 
@@ -354,7 +361,7 @@ class PaymentInformation extends CheckoutPaneBase {
    * {@inheritdoc}
    */
   public function submitPaneForm(array &$pane_form, FormStateInterface $form_state, array &$complete_form) {
-    if (isset($pane_form['billing_information'])) {
+    if (isset($pane_form['billing_information']['#inline_form'])) {
       /** @var \Drupal\commerce\Plugin\Commerce\InlineForm\EntityInlineFormInterface $inline_form */
       $inline_form = $pane_form['billing_information']['#inline_form'];
       /** @var \Drupal\profile\Entity\ProfileInterface $billing_profile */

@@ -25,14 +25,14 @@ class PromotionTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_promotion',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('commerce_promotion');
@@ -48,6 +48,8 @@ class PromotionTest extends OrderKernelTestBase {
    * @covers ::setDisplayName
    * @covers ::getDescription
    * @covers ::setDescription
+   * @covers ::getCreatedTime
+   * @covers ::setCreatedTime
    * @covers ::getOrderTypes
    * @covers ::setOrderTypes
    * @covers ::getOrderTypeIds
@@ -77,6 +79,11 @@ class PromotionTest extends OrderKernelTestBase {
    * @covers ::setEndDate
    * @covers ::isEnabled
    * @covers ::setEnabled
+   * @covers ::getOwner
+   * @covers ::setOwner
+   * @covers ::getOwnerId
+   * @covers ::setOwnerId
+   * @covers ::requiresCoupon
    */
   public function testPromotion() {
     $order_type = OrderType::load('default');
@@ -92,6 +99,9 @@ class PromotionTest extends OrderKernelTestBase {
 
     $promotion->setDescription('My Promotion Description');
     $this->assertEquals('My Promotion Description', $promotion->getDescription());
+
+    $promotion->setCreatedTime(635879700);
+    $this->assertEquals(635879700, $promotion->getCreatedTime());
 
     $promotion->setOrderTypes([$order_type]);
     $order_types = $promotion->getOrderTypes();
@@ -171,6 +181,16 @@ class PromotionTest extends OrderKernelTestBase {
 
     $promotion->setEnabled(TRUE);
     $this->assertEquals(TRUE, $promotion->isEnabled());
+
+    $promotion->setOwnerId(900);
+    $this->assertTrue($promotion->getOwner()->isAnonymous());
+    $this->assertEquals(900, $promotion->getOwnerId());
+    $promotion->save();
+    $this->assertEquals(0, $promotion->getOwnerId());
+
+    $this->assertFalse($promotion->requiresCoupon());
+    $promotion->set('require_coupon', TRUE);
+    $this->assertTrue($promotion->requiresCoupon());
   }
 
   /**

@@ -6,8 +6,10 @@ use Drupal\commerce\AjaxFormTrait;
 use Drupal\commerce\InlineFormManager;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutPane\CheckoutPaneBase;
 use Drupal\commerce_checkout\Plugin\Commerce\CheckoutFlow\CheckoutFlowInterface;
+use Drupal\commerce_shipping\Entity\ShipmentInterface;
 use Drupal\commerce_shipping\OrderShipmentSummaryInterface;
 use Drupal\commerce_shipping\PackerManagerInterface;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -114,6 +116,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
    */
   public function defaultConfiguration() {
     return [
+      'auto_recalculate' => TRUE,
       'require_shipping_profile' => TRUE,
     ] + parent::defaultConfiguration();
   }
@@ -123,10 +126,16 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
    */
   public function buildConfigurationSummary() {
     if (!empty($this->configuration['require_shipping_profile'])) {
-      $summary = $this->t('Hide shipping costs until an address is entered: Yes');
+      $summary = $this->t('Hide shipping costs until an address is entered: Yes') . '<br>';
     }
     else {
-      $summary = $this->t('Hide shipping costs until an address is entered: No');
+      $summary = $this->t('Hide shipping costs until an address is entered: No') . '<br>';
+    }
+    if (!empty($this->configuration['auto_recalculate'])) {
+      $summary .= $this->t('Autorecalculate: Yes');
+    }
+    else {
+      $summary .= $this->t('Autorecalculate: No');
     }
 
     return $summary;
@@ -142,6 +151,16 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       '#title' => $this->t('Hide shipping costs until an address is entered'),
       '#default_value' => $this->configuration['require_shipping_profile'],
     ];
+    $form['auto_recalculate'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Auto recalculate shipping costs when the shipping address changes'),
+      '#default_value' => $this->configuration['auto_recalculate'],
+      '#states' => [
+        'visible' => [
+          ':input[name="configuration[panes][shipping_information][configuration][require_shipping_profile]"]' => ['checked' => TRUE],
+        ],
+      ],
+    ];
 
     return $form;
   }
@@ -155,6 +174,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     if (!$form_state->getErrors()) {
       $values = $form_state->getValue($form['#parents']);
       $this->configuration['require_shipping_profile'] = !empty($values['require_shipping_profile']);
+      $this->configuration['auto_recalculate'] = !empty($values['auto_recalculate']) && $this->configuration['require_shipping_profile'];
     }
   }
 
@@ -206,15 +226,39 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       'copy_on_save' => FALSE,
     ], $this->getShippingProfile());
 
+    // Prepare the form for ajax.
+    // Not using Html::getUniqueId() on the wrapper ID to avoid #2675688.
+    $pane_form['#wrapper_id'] = 'shipping-information-wrapper';
+    $pane_form['#prefix'] = '<div id="' . $pane_form['#wrapper_id'] . '">';
+    $pane_form['#suffix'] = '</div>';
+    // Auto recalculation is enabled only when a shipping profile is required.
+    $pane_form['#auto_recalculate'] = !empty($this->configuration['auto_recalculate']) && !empty($this->configuration['require_shipping_profile']);
+    $pane_form['#after_build'][] = [static::class, 'autoRecalculateProcess'];
+
     $pane_form['shipping_profile'] = [
       '#parents' => array_merge($pane_form['#parents'], ['shipping_profile']),
       '#inline_form' => $inline_form,
     ];
     $pane_form['shipping_profile'] = $inline_form->buildInlineForm($pane_form['shipping_profile'], $form_state);
+    $triggering_element = $form_state->getTriggeringElement();
     // The shipping_profile should always exist in form state (and not just
     // after "Recalculate shipping" is clicked).
-    if (!$form_state->has('shipping_profile')) {
+    if (!$form_state->has('shipping_profile') ||
+      // For some reason, when the address selected is changed, the shipping
+      // profile in form state is stale.
+      (isset($triggering_element['#parents']) && in_array('select_address', $triggering_element['#parents'], TRUE))) {
       $form_state->set('shipping_profile', $inline_form->getEntity());
+    }
+
+    $class = get_class($this);
+    // Ensure selecting a different address refreshes the entire form.
+    if (isset($pane_form['shipping_profile']['select_address'])) {
+      $pane_form['shipping_profile']['select_address']['#ajax'] = [
+        'callback' => [$class, 'ajaxRefreshForm'],
+        'element' => $pane_form['#parents'],
+      ];
+      // Selecting a different address should trigger a recalculation.
+      $pane_form['shipping_profile']['select_address']['#recalculate'] = TRUE;
     }
 
     $pane_form['recalculate_shipping'] = [
@@ -222,12 +266,15 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       '#value' => $this->t('Recalculate shipping'),
       '#recalculate' => TRUE,
       '#ajax' => [
-        'callback' => [get_class($this), 'ajaxRefreshForm'],
+        'callback' => [$class, 'ajaxRefreshForm'],
         'element' => $pane_form['#parents'],
       ],
       // The calculation process only needs a valid shipping profile.
       '#limit_validation_errors' => [
         array_merge($pane_form['#parents'], ['shipping_profile']),
+      ],
+      '#after_build' => [
+        [static::class, 'clearValues'],
       ],
     ];
     $pane_form['removed_shipments'] = [
@@ -241,7 +288,26 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     $shipping_profile = $form_state->get('shipping_profile');
     $shipments = $this->order->get('shipments')->referencedEntities();
     $recalculate_shipping = $form_state->get('recalculate_shipping');
-    $force_packing = empty($shipments) && $this->canCalculateRates($shipping_profile);
+    $can_calculate_rates = $this->canCalculateRates($shipping_profile);
+
+    // If the shipping recalculation is triggered, ensure the rates can
+    // be recalculated (i.e a valid address is entered).
+    if ($recalculate_shipping && !$can_calculate_rates) {
+      $recalculate_shipping = FALSE;
+      $shipments = [];
+    }
+
+    // Ensure the profile is saved with the latest address, it's necessary
+    // to do that in case the profile isn't new, otherwise the shipping profile
+    // referenced by the shipment won't reflect the updated address.
+    if (!$shipping_profile->isNew() &&
+      $shipping_profile->hasTranslationChanges() &&
+      $can_calculate_rates) {
+      $shipping_profile->save();
+      $inline_form->setEntity($shipping_profile);
+    }
+
+    $force_packing = empty($shipments) && $can_calculate_rates;
     if ($recalculate_shipping || $force_packing) {
       // We're still relying on the packer manager for packing the order since
       // we don't want the shipments to be saved for performance reasons.
@@ -270,7 +336,45 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       $pane_form['shipments'][$index]['#shipment'] = $shipment;
     }
 
+    // Update the shipments and save the order if no rate was explicitly
+    // selected, that usually occurs when changing addresses, this will ensure
+    // the default rate is selected/applied.
+    if (!$this->hasRateSelected($pane_form, $form_state) && ($recalculate_shipping || $force_packing)) {
+      array_map(function (ShipmentInterface $shipment) {
+        if (!$shipment->isNew()) {
+          $shipment->save();
+        }
+      }, $shipments);
+      $this->order->set('shipments', $shipments);
+      $this->order->save();
+    }
+
     return $pane_form;
+  }
+
+  /**
+   * Pane form #process callback: adds recalculation settings.
+   *
+   * @param array $element
+   *   The form element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The modified element.
+   */
+  public static function autoRecalculateProcess(array $element, FormStateInterface $form_state) {
+    if ($element['#auto_recalculate']) {
+      $recalculate_button_selector = $element['recalculate_shipping']['#attributes']['data-drupal-selector'];
+      $element['#attached']['library'][] = 'commerce_shipping/shipping_checkout';
+      $element['#attached']['drupalSettings']['commerceShipping'] = [
+        'wrapper' => $element['#wrapper_id'],
+        'recalculateButtonSelector' => '[data-drupal-selector="' . $recalculate_button_selector . '"]',
+      ];
+      $element['recalculate_shipping']['#attributes']['class'][] = 'js-hide';
+    }
+
+    return $element;
   }
 
   /**
@@ -281,29 +385,51 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     $triggering_element = $form_state->getTriggeringElement();
     $recalculate = !empty($triggering_element['#recalculate']);
     $button_type = isset($triggering_element['#button_type']) ? $triggering_element['#button_type'] : '';
-    if (!$recalculate && $button_type == 'primary' && empty($shipment_indexes)) {
+    /** @var \Drupal\commerce\Plugin\Commerce\InlineForm\EntityInlineFormInterface $inline_form */
+    $inline_form = $pane_form['shipping_profile']['#inline_form'];
+    /** @var \Drupal\profile\Entity\ProfileInterface $profile */
+    $profile = $inline_form->getEntity();
+
+    // The profile in form state needs to reflect the submitted values,
+    // for packers invoked on form rebuild, or "Billing same as shipping".
+    $form_state->set('shipping_profile', $profile);
+
+    $shipments = [];
+    foreach ($shipment_indexes as $index) {
+      if (!isset($pane_form['shipments'][$index]['#shipment'])) {
+        continue;
+      }
+      $shipment = clone $pane_form['shipments'][$index]['#shipment'];
+      $form_display = EntityFormDisplay::collectRenderDisplay($shipment, 'checkout');
+      $form_display->removeComponent('shipping_profile');
+      $form_display->extractFormValues($shipment, $pane_form['shipments'][$index], $form_state);
+      $form_display->validateFormValues($shipment, $pane_form['shipments'][$index], $form_state);
+      $shipment->setShippingProfile($profile);
+      $shipments[] = $shipment;
+    }
+
+    if (!$recalculate && $button_type == 'primary' && !$shipments) {
       // The checkout step was submitted without shipping being calculated.
       // Force the recalculation now and reload the page.
       $recalculate = TRUE;
       $this->messenger()->addError($this->t('Please select a shipping method.'));
       $form_state->setRebuild(TRUE);
     }
+    $form_state->set('recalculate_shipping', $recalculate);
 
-    if ($recalculate) {
-      $form_state->set('recalculate_shipping', TRUE);
-    }
-    /** @var \Drupal\commerce\Plugin\Commerce\InlineForm\EntityInlineFormInterface $inline_form */
-    $inline_form = $pane_form['shipping_profile']['#inline_form'];
-    // The profile in form state needs to reflect the submitted values,
-    // for packers invoked on form rebuild, or "Billing same as shipping".
-    $form_state->set('shipping_profile', $inline_form->getEntity());
-
-    foreach ($shipment_indexes as $index) {
-      $shipment = clone $pane_form['shipments'][$index]['#shipment'];
-      $form_display = EntityFormDisplay::collectRenderDisplay($shipment, 'checkout');
-      $form_display->removeComponent('shipping_profile');
-      $form_display->extractFormValues($shipment, $pane_form['shipments'][$index], $form_state);
-      $form_display->validateFormValues($shipment, $pane_form['shipments'][$index], $form_state);
+    // If another rate was selected, update the shipments and refresh the order
+    // to reflect the new rate in the order summary.
+    if (!empty($triggering_element['#rate'])) {
+      // Unfortunately, we have to save the shipment, otherwise
+      // $order->get('shipments')->referencedEntities() will return stale
+      // shipments in case the order is already referencing saved shipments.
+      array_map(function (ShipmentInterface $shipment) {
+        if (!$shipment->isNew()) {
+          $shipment->save();
+        }
+      }, $shipments);
+      $this->order->set('shipments', $shipments);
+      $this->order->save();
     }
   }
 
@@ -319,6 +445,10 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     // Save the modified shipments.
     $shipments = [];
     foreach (Element::children($pane_form['shipments']) as $index) {
+      if (!isset($pane_form['shipments'][$index]['#shipment'])) {
+        continue;
+      }
+
       /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
       $shipment = clone $pane_form['shipments'][$index]['#shipment'];
       $form_display = EntityFormDisplay::collectRenderDisplay($shipment, 'checkout');
@@ -337,6 +467,37 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       $removed_shipments = $shipment_storage->loadMultiple($removed_shipment_ids);
       $shipment_storage->delete($removed_shipments);
     }
+  }
+
+  /**
+   * Clears user input of selected shipping rates.
+   *
+   * This is required to prevent invalid options being selected is a shipping
+   * rate is no longer available, when the selected address is updated or when
+   * the rates recalculation is explicitly triggered.
+   *
+   * @param array $element
+   *   The element.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state.
+   *
+   * @return array
+   *   The element.
+   */
+  public static function clearValues(array $element, FormStateInterface $form_state) {
+    $triggering_element = $form_state->getTriggeringElement();
+    if (!$triggering_element) {
+      return $element;
+    }
+    $triggering_element_name = end($triggering_element['#parents']);
+    if (in_array($triggering_element_name, ['recalculate_shipping', 'select_address'], TRUE)) {
+      $user_input = &$form_state->getUserInput();
+      $parents = $element['#parents'];
+      array_pop($parents);
+      $parents[] = 'shipments';
+      NestedArray::unsetValue($user_input, $parents);
+    }
+    return $element;
   }
 
   /**
@@ -392,6 +553,34 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     }
 
     return TRUE;
+  }
+
+  /**
+   * Determines whether a shipping rate is currently selected.
+   *
+   * @param array $pane_form
+   *   The pane form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The form state of the parent form.
+   *
+   * @return bool
+   *   Whether a shipping rate is currently selected.
+   */
+  protected function hasRateSelected(array $pane_form, FormStateInterface $form_state) {
+    $user_input = NestedArray::getValue($form_state->getUserInput(), $pane_form['#parents']);
+
+    if (empty($user_input['shipments'])) {
+      return FALSE;
+    }
+
+    // Loop over the shipments input to see if a shipping rate was selected.
+    foreach ($user_input['shipments'] as $values) {
+      if (!empty(array_filter($values['shipping_method']))) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
   }
 
 }

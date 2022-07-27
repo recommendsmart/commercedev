@@ -18,7 +18,7 @@ class NumberPatternTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_number_pattern',
     'commerce_number_pattern_test',
   ];
@@ -72,7 +72,7 @@ class NumberPatternTest extends CommerceWebDriverTestBase {
     $number_pattern->save();
 
     $this->drupalGet($number_pattern->toUrl('edit-form'));
-    $this->assertNoField('configuration[yearly][per_store_sequence');
+    $this->assertSession()->fieldNotExists('configuration[yearly][per_store_sequence');
     $edit = [
       'label' => 'Foo!',
       'configuration[yearly][initial_number]' => 2,

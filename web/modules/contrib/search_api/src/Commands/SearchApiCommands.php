@@ -9,7 +9,7 @@ use Drupal\search_api\Contrib\RowsOfMultiValueFields;
 use Drupal\search_api\Utility\CommandHelper;
 use Drush\Commands\DrushCommands;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Defines Drush commands for the Search API.
@@ -30,7 +30,7 @@ class SearchApiCommands extends DrushCommands {
    *   The entity type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -230,9 +230,9 @@ class SearchApiCommands extends DrushCommands {
    *   Alias to index all items for all enabled indexes.
    * @usage drush sapi-i node_index
    *   Index all items for the index with the ID node_index.
-   * @usage drush sapi-i node_index 100
+   * @usage drush sapi-i --limit=100 node_index
    *   Index a maximum number of 100 items for the index with the ID node_index.
-   * @usage drush sapi-i node_index 100 10
+   * @usage drush sapi-i --limit=100 --batch-size=10 node_index
    *   Index a maximum number of 100 items (10 items per batch run) for the
    *   index with the ID node_index.
    *

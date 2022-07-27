@@ -15,9 +15,9 @@ provider: null
 plugin: 'system_menu_block:social'
 settings:
   id: 'system_menu_block:social'
-  label: Social
+  label: 'Let''s get social'
   provider: system
-  label_display: '0'
+  label_display: visible
   level: 1
   depth: 0
 visibility: {  }

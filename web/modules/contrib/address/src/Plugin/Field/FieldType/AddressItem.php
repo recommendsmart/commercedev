@@ -6,6 +6,7 @@ use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressFormat\FieldOverride;
 use CommerceGuys\Addressing\AddressFormat\FieldOverrides;
 use Drupal\address\AddressInterface;
+use Drupal\address\FieldHelper;
 use Drupal\address\LabelHelper;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -96,7 +97,7 @@ class AddressItem extends FieldItemBase implements AddressInterface {
    * {@inheritdoc}
    */
   public static function mainPropertyName() {
-    return NULL;
+    return 'country_code';
   }
 
   /**
@@ -105,32 +106,47 @@ class AddressItem extends FieldItemBase implements AddressInterface {
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     $properties = [];
     $properties['langcode'] = DataDefinition::create('string')
-      ->setLabel(t('The language code.'));
+      ->setLabel(t('The language code'));
     $properties['country_code'] = DataDefinition::create('string')
-      ->setLabel(t('The two-letter country code.'));
+      ->setLabel(t('The two-letter country code'));
     $properties['administrative_area'] = DataDefinition::create('string')
-      ->setLabel(t('The top-level administrative subdivision of the country.'));
+      ->setLabel(t('The top-level administrative subdivision of the country'));
     $properties['locality'] = DataDefinition::create('string')
-      ->setLabel(t('The locality (i.e. city).'));
+      ->setLabel(t('The locality (i.e. city)'));
     $properties['dependent_locality'] = DataDefinition::create('string')
-      ->setLabel(t('The dependent locality (i.e. neighbourhood).'));
+      ->setLabel(t('The dependent locality (i.e. neighbourhood)'));
     $properties['postal_code'] = DataDefinition::create('string')
-      ->setLabel(t('The postal code.'));
+      ->setLabel(t('The postal code'));
     $properties['sorting_code'] = DataDefinition::create('string')
-      ->setLabel(t('The sorting code.'));
+      ->setLabel(t('The sorting code'));
     $properties['address_line1'] = DataDefinition::create('string')
-      ->setLabel(t('The first line of the address block.'));
+      ->setLabel(t('The first line of the address block'));
     $properties['address_line2'] = DataDefinition::create('string')
-      ->setLabel(t('The second line of the address block.'));
+      ->setLabel(t('The second line of the address block'));
     $properties['organization'] = DataDefinition::create('string')
       ->setLabel(t('The organization'));
     $properties['given_name'] = DataDefinition::create('string')
-      ->setLabel(t('The given name.'));
+      ->setLabel(t('The given name'));
     $properties['additional_name'] = DataDefinition::create('string')
-      ->setLabel(t('The additional name.'));
+      ->setLabel(t('The additional name'));
     $properties['family_name'] = DataDefinition::create('string')
-      ->setLabel(t('The family name.'));
+      ->setLabel(t('The family name'));
 
+    return $properties;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProperties($include_computed = FALSE) {
+    $properties = parent::getProperties($include_computed);
+    $parsed_overrides = new FieldOverrides($this->getFieldOverrides());
+    $hidden_properties = array_map(static function ($name) {
+      return FieldHelper::getPropertyName($name);
+    }, $parsed_overrides->getHiddenFields());
+    foreach ($hidden_properties as $hidden_property) {
+      unset($properties[$hidden_property]);
+    }
     return $properties;
   }
 
@@ -139,7 +155,7 @@ class AddressItem extends FieldItemBase implements AddressInterface {
    */
   public static function defaultFieldSettings() {
     return self::defaultCountrySettings() + [
-      'langcode_override' => '',
+      'langcode_override' => NULL,
       'field_overrides' => [],
       // Replaced by field_overrides.
       'fields' => [],
@@ -265,7 +281,7 @@ class AddressItem extends FieldItemBase implements AddressInterface {
    *   in case the language is always known (e.g. a field storing the "english
    *   address" on a chinese article).
    *
-   * The langcode property is intepreted by getLocale(), and in case it's NULL,
+   * The langcode property is interpreted by getLocale(), and in case it's NULL,
    * the field langcode is returned instead (indicating a non-multilingual site
    * or a translatable parent entity).
    *
@@ -276,7 +292,7 @@ class AddressItem extends FieldItemBase implements AddressInterface {
     $this->langcode = NULL;
     $language_manager = \Drupal::languageManager();
     if (!$language_manager->isMultilingual()) {
-      return;
+      return NULL;
     }
 
     if ($override = $this->getSetting('langcode_override')) {
@@ -308,6 +324,17 @@ class AddressItem extends FieldItemBase implements AddressInterface {
     $constraints[] = $constraint_manager->create('AddressFormat', ['fieldOverrides' => $field_overrides]);
 
     return $constraints;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setValue($values, $notify = TRUE) {
+    if (isset($values['langcode']) && $values['langcode'] === '') {
+      $values['langcode'] = NULL;
+    }
+
+    parent::setValue($values, $notify);
   }
 
   /**

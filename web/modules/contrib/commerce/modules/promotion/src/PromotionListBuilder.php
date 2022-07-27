@@ -91,6 +91,28 @@ class PromotionListBuilder extends EntityListBuilder implements FormInterface {
   }
 
   /**
+   * Loads entity IDs using a pager sorted by the entity id.
+   *
+   * @return array
+   *   An array of entity IDs.
+   */
+  protected function getEntityIds() {
+    $query = $this->getStorage()->getQuery()
+      ->accessCheck(TRUE)
+      // The promotion list builder is used only on the "reorder" page, where
+      // it is pointless to show disabled promotions since reordering disabled
+      // promotions doesn't really have an impact.
+      ->condition('status', 1)
+      ->sort($this->entityType->getKey('id'));
+
+    // Only add the pager if a limit is specified.
+    if ($this->limit) {
+      $query->pager($this->limit);
+    }
+    return $query->execute();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function load() {
@@ -132,9 +154,6 @@ class PromotionListBuilder extends EntityListBuilder implements FormInterface {
     $row['#attributes']['class'][] = 'draggable';
     $row['#weight'] = $entity->getWeight();
     $row['name'] = $entity->label();
-    if (!$entity->isEnabled()) {
-      $row['name'] .= ' (' . $this->t('Disabled') . ')';
-    }
     $row['usage'] = $current_usage . ' / ' . $usage_limit;
     $row['customer_limit'] = $customer_limit;
     $row['start_date'] = $entity->getStartDate()->format('M jS Y H:i:s');
@@ -209,7 +228,7 @@ class PromotionListBuilder extends EntityListBuilder implements FormInterface {
       $form['actions']['#type'] = 'actions';
       $form['actions']['submit'] = [
         '#type' => 'submit',
-        '#value' => t('Save'),
+        '#value' => $this->t('Save'),
         '#button_type' => 'primary',
       ];
     }
@@ -250,6 +269,21 @@ class PromotionListBuilder extends EntityListBuilder implements FormInterface {
           'commerce_promotion' => $entity->id(),
         ]),
       ];
+
+      if (!$entity->isEnabled() && $entity->hasLinkTemplate('enable-form')) {
+        $operations['enable'] = [
+          'title' => $this->t('Enable'),
+          'weight' => -10,
+          'url' => $this->ensureDestination($entity->toUrl('enable-form')),
+        ];
+      }
+      elseif ($entity->hasLinkTemplate('disable-form')) {
+        $operations['disable'] = [
+          'title' => $this->t('Disable'),
+          'weight' => 40,
+          'url' => $this->ensureDestination($entity->toUrl('disable-form')),
+        ];
+      }
     }
 
     return $operations;

@@ -17,17 +17,9 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Render\Element;
+use Drupal\Core\Security\TrustedCallbackInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-// @codingStandardsIgnoreStart
-// @todo remove this BC layer once support for Drupal 8.7 is sunsetted
-if (interface_exists('\Drupal\Core\Security\TrustedCallbackInterface')) {
-  interface TrustedCallbackInterface extends \Drupal\Core\Security\TrustedCallbackInterface {}
-}
-else {
-  interface TrustedCallbackInterface {}
-}
-// @codingStandardsIgnoreStop
 /**
  * Plugin implementation of the 'address_default' formatter.
  *
@@ -173,7 +165,7 @@ class AddressDefaultFormatter extends FormatterBase implements ContainerFactoryP
         '#type' => 'html_tag',
         '#tag' => 'span',
         '#attributes' => ['class' => [$class]],
-        '#value' => Html::escape($values[$field]),
+        '#value' => !empty($values[$field]) ? Html::escape($values[$field]) : '',
         '#placeholder' => '%' . $field,
       ];
     }

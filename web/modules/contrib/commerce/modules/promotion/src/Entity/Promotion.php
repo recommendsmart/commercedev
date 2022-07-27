@@ -3,13 +3,16 @@
 namespace Drupal\commerce_promotion\Entity;
 
 use Drupal\commerce\ConditionGroup;
+use Drupal\commerce\EntityOwnerTrait;
 use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\commerce\Plugin\Commerce\Condition\ConditionInterface;
 use Drupal\commerce\Plugin\Commerce\Condition\ParentEntityAwareInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\commerce_price\Calculator;
 use Drupal\commerce_promotion\Plugin\Commerce\PromotionOffer\OrderItemPromotionOfferInterface;
 use Drupal\commerce_promotion\Plugin\Commerce\PromotionOffer\PromotionOfferInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -40,6 +43,8 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  *     "form" = {
  *       "default" = "Drupal\commerce_promotion\Form\PromotionForm",
  *       "add" = "Drupal\commerce_promotion\Form\PromotionForm",
+ *       "enable" = "Drupal\commerce_promotion\Form\PromotionEnableForm",
+ *       "disable" = "Drupal\commerce_promotion\Form\PromotionDisableForm",
  *       "edit" = "Drupal\commerce_promotion\Form\PromotionForm",
  *       "duplicate" = "Drupal\commerce_promotion\Form\PromotionForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm"
@@ -48,7 +53,7 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  *       "default" = "Drupal\entity\Menu\DefaultEntityLocalTaskProvider",
  *     },
  *     "route_provider" = {
- *       "default" = "Drupal\entity\Routing\AdminHtmlRouteProvider",
+ *       "default" = "Drupal\commerce_promotion\PromotionRouteProvider",
  *       "delete-multiple" = "Drupal\entity\Routing\DeleteMultipleRouteProvider",
  *     },
  *     "translation" = "Drupal\commerce_promotion\PromotionTranslationHandler",
@@ -67,15 +72,19 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  *     "label" = "name",
  *     "langcode" = "langcode",
  *     "uuid" = "uuid",
+ *     "owner" = "uid",
  *     "status" = "status",
  *   },
  *   links = {
  *     "add-form" = "/promotion/add",
  *     "edit-form" = "/promotion/{commerce_promotion}/edit",
+ *     "enable-form" = "/promotion/{commerce_promotion}/enable",
+ *     "disable-form" = "/promotion/{commerce_promotion}/disable",
  *     "duplicate-form" = "/promotion/{commerce_promotion}/duplicate",
  *     "delete-form" = "/promotion/{commerce_promotion}/delete",
  *     "delete-multiple-form" = "/admin/commerce/promotions/delete",
  *     "collection" = "/admin/commerce/promotions",
+ *     "reorder" = "/admin/commerce/promotions/reorder",
  *     "drupal:content-translation-overview" = "/promotion/{commerce_promotion}/translations",
  *     "drupal:content-translation-add" = "/promotion/{commerce_promotion}/translations/add/{source}/{target}",
  *     "drupal:content-translation-edit" = "/promotion/{commerce_promotion}/translations/edit/{language}",
@@ -84,6 +93,9 @@ use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
  * )
  */
 class Promotion extends CommerceContentEntityBase implements PromotionInterface {
+
+  use EntityChangedTrait;
+  use EntityOwnerTrait;
 
   /**
    * {@inheritdoc}
@@ -148,6 +160,21 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
    */
   public function setDescription($description) {
     $this->set('description', $description);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedTime() {
+    return $this->get('created')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setCreatedTime($timestamp) {
+    $this->set('created', $timestamp);
     return $this;
   }
 
@@ -476,14 +503,26 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
   /**
    * {@inheritdoc}
    */
+  public function requiresCoupon() {
+    return !empty($this->get('require_coupon')->value);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function available(OrderInterface $order) {
     if (!$this->isEnabled()) {
+      return FALSE;
+    }
+    // A promotion that requires a coupon to apply should reference coupons
+    // to apply.
+    if ($this->requiresCoupon() && !$this->hasCoupons()) {
       return FALSE;
     }
     if (!in_array($order->bundle(), $this->getOrderTypeIds())) {
       return FALSE;
     }
-    if (!in_array($order->getStoreId(), $this->getStoreIds())) {
+    if (!empty($this->getStoreIds()) && !in_array($order->getStoreId(), $this->getStoreIds())) {
       return FALSE;
     }
     $date = $order->getCalculationDate();
@@ -567,6 +606,10 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
       $offer_conditions = new ConditionGroup($offer->getConditions(), $offer->getConditionOperator());
       // Apply the offer to order items that pass the conditions.
       foreach ($order->getItems() as $order_item) {
+        // Skip order items with a null unit price or with a quantity = 0.
+        if (!$order_item->getUnitPrice() || Calculator::compare($order_item->getQuantity(), '0') === 0) {
+          continue;
+        }
         if ($offer_conditions->evaluate($order_item)) {
           $offer->apply($order_item, $this);
         }
@@ -574,6 +617,39 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
     }
     else {
       $offer->apply($order, $this);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function clear(OrderInterface $order) {
+    $offer = $this->getOffer();
+    if ($offer instanceof OrderItemPromotionOfferInterface) {
+      foreach ($order->getItems() as $order_item) {
+        $offer->clear($order_item, $this);
+      }
+    }
+    else {
+      $offer->clear($order, $this);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
+    foreach (array_keys($this->getTranslationLanguages()) as $langcode) {
+      $translation = $this->getTranslation($langcode);
+
+      // Explicitly set the owner ID to 0 if the translation owner is anonymous
+      // (This will ensure we don't store a broken reference in case the user
+      // no longer exists).
+      if ($translation->getOwner()->isAnonymous()) {
+        $translation->setOwnerId(0);
+      }
     }
   }
 
@@ -616,6 +692,7 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
+    $fields += static::ownerBaseFieldDefinitions($entity_type);
 
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
@@ -630,6 +707,12 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
         'type' => 'string_textfield',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['uid']
+      ->setLabel(t('Owner'))
+      ->setDescription(t('The promotion owner.'))
       ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
@@ -666,6 +749,17 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
       ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
+    $fields['created'] = BaseFieldDefinition::create('created')
+      ->setLabel(t('Created'))
+      ->setTranslatable(TRUE)
+      ->setDescription(t('The time when the promotion was created.'));
+
+    $fields['changed'] = BaseFieldDefinition::create('changed')
+      ->setLabel(t('Changed'))
+      ->setTranslatable(TRUE)
+      ->setDescription(t('The time when the promotion was last edited.'))
+      ->setDisplayConfigurable('view', TRUE);
+
     $fields['order_types'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Order types'))
       ->setDescription(t('The order types for which the promotion is valid.'))
@@ -680,11 +774,11 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
 
     $fields['stores'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Stores'))
-      ->setDescription(t('The stores for which the promotion is valid.'))
+      ->setDescription(t('Limit promotion availability to selected stores.'))
       ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
-      ->setRequired(TRUE)
       ->setSetting('target_type', 'commerce_store')
       ->setSetting('handler', 'default')
+      ->setSetting('optional_label', t('Restrict to specific stores'))
       ->setDisplayOptions('form', [
         'type' => 'commerce_entity_select',
         'weight' => 2,
@@ -694,6 +788,7 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
       ->setLabel(t('Offer type'))
       ->setCardinality(1)
       ->setRequired(TRUE)
+      ->setSetting('allowed_values_function', [static::class, 'getOfferOptions'])
       ->setDisplayOptions('form', [
         'type' => 'commerce_plugin_select',
         'weight' => 3,
@@ -784,6 +879,18 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
         'weight' => 4,
       ]);
 
+    $fields['require_coupon'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Require a coupon to apply this promotion'))
+      ->setDefaultValue(FALSE)
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'settings' => [
+          'display_label' => TRUE,
+        ],
+      ])
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDisplayConfigurable('form', TRUE);
+
     $fields['status'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Status'))
       ->setDescription(t('Whether the promotion is enabled.'))
@@ -852,6 +959,23 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
       self::COMPATIBLE_ANY => t('Any promotion'),
       self::COMPATIBLE_NONE => t('Not with any other promotions'),
     ];
+  }
+
+  /**
+   * Gets the allowed values for the 'offer' base field.
+   *
+   * @return array
+   *   The allowed values.
+   */
+  public static function getOfferOptions() {
+    /** @var \Drupal\commerce_promotion\PromotionOfferManager $offer_manager */
+    $offer_manager = \Drupal::getContainer()->get('plugin.manager.commerce_promotion_offer');
+    $plugins = array_map(static function ($definition) {
+      return $definition['label'];
+    }, $offer_manager->getDefinitions());
+    asort($plugins);
+
+    return $plugins;
   }
 
 }

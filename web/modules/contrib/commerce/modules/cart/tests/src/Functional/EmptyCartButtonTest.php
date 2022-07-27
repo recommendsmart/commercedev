@@ -30,14 +30,14 @@ class EmptyCartButtonTest extends OrderBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_cart_test',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store);

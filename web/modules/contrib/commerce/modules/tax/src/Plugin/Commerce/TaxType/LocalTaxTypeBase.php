@@ -9,6 +9,8 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_price\RounderInterface;
 use Drupal\commerce_store\Entity\StoreInterface;
+use Drupal\commerce_tax\Event\BuildZonesEvent;
+use Drupal\commerce_tax\Event\TaxEvents;
 use Drupal\commerce_tax\TaxZone;
 use Drupal\commerce_tax\Resolver\ChainTaxRateResolverInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -101,7 +103,7 @@ abstract class LocalTaxTypeBase extends TaxTypeBase implements LocalTaxTypeInter
    */
   public function applies(OrderInterface $order) {
     $store = $order->getStore();
-    return $this->matchesAddress($store) || $this->matchesRegistrations($store);
+    return $this->matchesRegistrations($store);
   }
 
   /**
@@ -212,8 +214,11 @@ abstract class LocalTaxTypeBase extends TaxTypeBase implements LocalTaxTypeInter
    */
   protected function checkRegistrations(StoreInterface $store, TaxZone $zone) {
     foreach ($store->get('tax_registrations') as $field_item) {
-      if ($zone->match(new Address($field_item->value))) {
-        return TRUE;
+      $address = new Address($field_item->value);
+      foreach ($zone->getTerritories() as $territory) {
+        if ($territory->getCountryCode() === $address->getCountryCode()) {
+          return TRUE;
+        }
       }
     }
     return FALSE;
@@ -332,7 +337,11 @@ abstract class LocalTaxTypeBase extends TaxTypeBase implements LocalTaxTypeInter
    */
   public function getZones() {
     if (empty($this->zones)) {
-      $this->zones = $this->buildZones();
+      $zones = $this->buildZones();
+      // Dispatch an event to allow altering the tax zones.
+      $event = new BuildZonesEvent($zones, $this);
+      $this->eventDispatcher->dispatch($event, TaxEvents::BUILD_ZONES);
+      $this->zones = $event->getZones();
     }
 
     return $this->zones;

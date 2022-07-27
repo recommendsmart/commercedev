@@ -9,7 +9,7 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_payment\Exception\InvalidRequestException;
 use Drupal\commerce_payment\PaymentMethodTypeManager;
 use Drupal\commerce_payment\PaymentTypeManager;
-use Drupal\commerce_price\Calculator;
+use Drupal\commerce_price\MinorUnitsConverterInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Utility\NestedArray;
@@ -76,6 +76,13 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
   protected $time;
 
   /**
+   * The minor units converter.
+   *
+   * @var \Drupal\commerce_price\MinorUnitsConverterInterface
+   */
+  protected $minorUnitsConverter;
+
+  /**
    * Constructs a new PaymentGatewayBase object.
    *
    * @param array $configuration
@@ -92,12 +99,20 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
    *   The payment method type manager.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time.
+   * @param \Drupal\commerce_price\MinorUnitsConverterInterface $minor_units_converter
+   *   The minor units converter.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PaymentTypeManager $payment_type_manager, PaymentMethodTypeManager $payment_method_type_manager, TimeInterface $time) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PaymentTypeManager $payment_type_manager, PaymentMethodTypeManager $payment_method_type_manager, TimeInterface $time, MinorUnitsConverterInterface $minor_units_converter = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
+    if (!$minor_units_converter instanceof MinorUnitsConverterInterface) {
+      @trigger_error('Calling PaymentGatewayBase::__construct() with the $minor_units_converter argument is supported in commerce:2.25 and will be required before commerce:3.0. See https://www.drupal.org/project/commerce/issues/3150917.', E_USER_DEPRECATED);
+      $minor_units_converter = \Drupal::service('commerce_price.minor_units_converter');
+    }
+    $this->minorUnitsConverter = $minor_units_converter;
+
     if (array_key_exists('_entity', $configuration)) {
       $this->parentEntity = $configuration['_entity'];
       $this->entityId = $this->parentEntity->id();
@@ -123,7 +138,8 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.commerce_payment_type'),
       $container->get('plugin.manager.commerce_payment_method_type'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
+      $container->get('commerce_price.minor_units_converter')
     );
   }
 
@@ -311,7 +327,7 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
     $form['display_label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Display name'),
-      '#description' => t('Shown to customers during checkout.'),
+      '#description' => $this->t('Shown to customers during checkout.'),
       '#default_value' => $this->configuration['display_label'],
       '#required' => TRUE,
     ];
@@ -440,33 +456,25 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
   /**
    * {@inheritdoc}
    */
-  public function toMinorUnits(Price $amount) {
-    $currency_storage = $this->entityTypeManager->getStorage('commerce_currency');
-    /** @var \Drupal\commerce_price\Entity\CurrencyInterface $currency */
-    $currency = $currency_storage->load($amount->getCurrencyCode());
-    $fraction_digits = $currency->getFractionDigits();
-    $number = $amount->getNumber();
-    if ($fraction_digits > 0) {
-      $number = Calculator::multiply($number, pow(10, $fraction_digits));
+  public function buildAvsResponseCodeLabel($avs_response_code, $card_type) {
+    $avs_code_meanings = CreditCard::getAvsResponseCodeMeanings();
+    if (!isset($avs_code_meanings[$card_type][$avs_response_code])) {
+      return NULL;
     }
-
-    return round($number, 0);
+    return $avs_code_meanings[$card_type][$avs_response_code];
   }
 
   /**
-   * Gets the remote customer ID for the given user.
-   *
-   * The remote customer ID is specific to a payment gateway instance
-   * in the configured mode. This allows the gateway to skip test customers
-   * after the gateway has been switched to live mode.
-   *
-   * @param \Drupal\user\UserInterface $account
-   *   The user account.
-   *
-   * @return string
-   *   The remote customer ID, or NULL if none found.
+   * {@inheritdoc}
    */
-  protected function getRemoteCustomerId(UserInterface $account) {
+  public function toMinorUnits(Price $amount) {
+    return $this->minorUnitsConverter->toMinorUnits($amount);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getRemoteCustomerId(UserInterface $account) {
     $remote_id = NULL;
     if ($account->isAuthenticated()) {
       $provider = $this->parentEntity->id() . '|' . $this->getMode();

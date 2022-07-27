@@ -43,7 +43,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'block',
     'commerce_cart',
     'commerce_promotion',
@@ -56,7 +56,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->cart = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store, $this->adminUser);
@@ -140,6 +140,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
       'uid' => $this->adminUser->id(),
       'type' => 'credit_card',
       'payment_gateway' => 'onsite',
+      'remote_id' => '123456',
       'card_type' => 'visa',
       'card_number' => '1111',
       'billing_profile' => $profile,
@@ -151,6 +152,7 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
     $payment_method2 = $this->createEntity('commerce_payment_method', [
       'type' => 'credit_card',
       'payment_gateway' => 'onsite',
+      'remote_id' => '123456',
       'card_type' => 'visa',
       'card_number' => '9999',
       'billing_profile' => $profile,
@@ -356,6 +358,44 @@ class CouponRedemptionPaneTest extends CommerceWebDriverTestBase {
     $this->drupalGet(Url::fromRoute('commerce_checkout.form', ['commerce_order' => $this->cart->id(), 'step' => 'order_information']));
     $page = $this->getSession()->getPage();
     $this->assertStringContainsString('Johnny Appleseed', $page->find('css', 'p.address')->getText());
+  }
+
+  /**
+   * Tests that payment is not skipped if an order is no longer free.
+   */
+  public function testPaymentAfterCouponRemoval() {
+    $offer = $this->promotion->getOffer();
+    $offer->setConfiguration([
+      'percentage' => '1',
+    ]);
+    $this->promotion->setOffer($offer);
+    $this->promotion->save();
+    $coupons = $this->promotion->getCoupons();
+    $coupon = reset($coupons);
+    $this->cart->get('coupons')->appendItem($coupon->id());
+    $this->cart->save();
+    $this->drupalGet(Url::fromRoute('commerce_checkout.form', ['commerce_order' => $this->cart->id()]));
+    $this->submitForm([
+      'payment_information[billing_information][address][0][address][given_name]' => 'Johnny',
+      'payment_information[billing_information][address][0][address][family_name]' => 'Appleseed',
+      'payment_information[billing_information][address][0][address][address_line1]' => '123 New York Drive',
+      'payment_information[billing_information][address][0][address][locality]' => 'New York City',
+      'payment_information[billing_information][address][0][address][administrative_area]' => 'NY',
+      'payment_information[billing_information][address][0][address][postal_code]' => '10001',
+    ], 'Continue to review');
+    $this->assertSession()->pageTextContains($coupon->getCode());
+    $this->assertSession()->buttonExists('Complete checkout');
+    $this->getSession()->getPage()->pressButton('Remove coupon');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertSession()->pageTextNotContains($coupon->getCode());
+    // Now that the coupon is removed, the button label should change.
+    $this->submitForm([], 'Pay and complete purchase');
+    // In theory, the customer should be redirected to the order information
+    // step because the order is no longer free and the order doesn't reference
+    // a payment gateway.
+    $this->assertSession()->pageTextNotContains('Your order number is 1. You can view your order on your account page when logged in.');
+    $this->assertSession()->pageTextContains('No payment gateway selected.');
+    $this->getSession()->getPage()->hasField('Example');
   }
 
 }

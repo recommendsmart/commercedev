@@ -123,7 +123,9 @@ class CartProvider implements CartProviderInterface {
       $this->cartSession->addCartId($cart->id(), CartSession::COMPLETED);
     }
     // Remove the cart order from the internal cache, if present.
-    unset($this->cartData[$cart->getCustomerId()][$cart->id()]);
+    if (isset($this->cartData[$cart->getCustomerId()][$cart->id()])) {
+      unset($this->cartData[$cart->getCustomerId()][$cart->id()]);
+    }
   }
 
   /**
@@ -160,9 +162,9 @@ class CartProvider implements CartProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCarts(AccountInterface $account = NULL) {
+  public function getCarts(AccountInterface $account = NULL, StoreInterface $store = NULL) {
     $carts = [];
-    $cart_ids = $this->getCartIds($account);
+    $cart_ids = $this->getCartIds($account, $store);
     if ($cart_ids) {
       $carts = $this->orderStorage->loadMultiple($cart_ids);
     }
@@ -173,8 +175,12 @@ class CartProvider implements CartProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCartIds(AccountInterface $account = NULL) {
-    $cart_data = $this->loadCartData($account);
+  public function getCartIds(AccountInterface $account = NULL, StoreInterface $store = NULL) {
+    // Filter out cart IDS that do not belong to the store passed.
+    $cart_data = array_filter($this->loadCartData($account), function ($data) use ($store) {
+      return !$store || $store->id() === $data['store_id'];
+    });
+
     return array_keys($cart_data);
   }
 
@@ -207,6 +213,7 @@ class CartProvider implements CartProviderInterface {
         ->condition('cart', TRUE)
         ->condition('uid', $account->id())
         ->sort('order_id', 'DESC')
+        ->addTag('commerce_cart_order_ids')
         ->accessCheck(FALSE);
       $cart_ids = $query->execute();
     }
@@ -229,8 +236,9 @@ class CartProvider implements CartProviderInterface {
         // Skip locked carts, the customer is probably off-site for payment.
         continue;
       }
-      if ($cart->getCustomerId() != $uid || empty($cart->cart->value) || $cart->getState()->getId() != 'draft') {
-        // Skip carts that are no longer eligible.
+
+      // Skip carts that are no longer eligible.
+      if (!$this->isEligibleCart($cart, $account)) {
         $non_eligible_cart_ids[] = $cart->id();
         continue;
       }
@@ -248,6 +256,34 @@ class CartProvider implements CartProviderInterface {
     }
 
     return $this->cartData[$uid];
+  }
+
+  /**
+   * Returns whether the given cart is "eligible" for the given user.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $cart
+   *   The cart order.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The account.
+   *
+   * @return bool
+   *   Whether the given cart is "eligible" for the given user.
+   */
+  protected function isEligibleCart(OrderInterface $cart, AccountInterface $account) : bool {
+    // Carts that don't match customer ids should not be valid.
+    if ($cart->getCustomerId() != $account->id()) {
+      return FALSE;
+    }
+    // Empty carts should not be valid.
+    if (empty($cart->cart->value)) {
+      return FALSE;
+    }
+    // Carts not in draft mode should not be valid.
+    if ($cart->getState()->getId() != 'draft') {
+      return FALSE;
+    }
+
+    return TRUE;
   }
 
 }
