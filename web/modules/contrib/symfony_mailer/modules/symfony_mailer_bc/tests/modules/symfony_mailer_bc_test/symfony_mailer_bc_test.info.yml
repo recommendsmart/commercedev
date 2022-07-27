@@ -1,0 +1,13 @@
+name: Symfony Mailer BC Test
+type: module
+package: Mail
+hidden: true
+core_version_requirement: ^9.1
+dependencies:
+  - symfony_mailer:symfony_mailer
+  - symfony_mailer:symfony_mailer_bc
+
+# Information added by Drupal.org packaging script on 2022-06-18
+version: '1.0.0-alpha10'
+project: 'symfony_mailer'
+datestamp: 1655569042
