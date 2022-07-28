@@ -9,6 +9,7 @@ install:
   - block
   - breakpoint
   - ckeditor
+  - color
   - config
   - contextual
   - contact
@@ -47,6 +48,6 @@ install:
   - config_translation
   - content_translation
 themes:
-  - claro
+  - seven
   - umami
 keep_english: true

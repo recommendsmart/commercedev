@@ -26,9 +26,9 @@ class Request implements RequestInterface
      * @param null|string $method HTTP method for the request, if any.
      * @param string|resource|StreamInterface $body Message body, if any.
      * @param array $headers Headers for the message, if any.
-     * @throws Exception\InvalidArgumentException For any invalid value.
+     * @throws Exception\InvalidArgumentException for any invalid value.
      */
-    public function __construct($uri = null, ?string $method = null, $body = 'php://temp', array $headers = [])
+    public function __construct($uri = null, string $method = null, $body = 'php://temp', array $headers = [])
     {
         $this->initialize($uri, $method, $body, $headers);
     }
@@ -36,11 +36,10 @@ class Request implements RequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getHeaders(): array
+    public function getHeaders() : array
     {
         $headers = $this->headers;
-        if (
-            ! $this->hasHeader('host')
+        if (! $this->hasHeader('host')
             && $this->uri->getHost()
         ) {
             $headers['Host'] = [$this->getHostFromUri()];
@@ -52,11 +51,10 @@ class Request implements RequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getHeader($name): array
+    public function getHeader($header) : array
     {
-        if (empty($name) || ! $this->hasHeader($name)) {
-            if (
-                strtolower($name) === 'host'
+        if (! $this->hasHeader($header)) {
+            if (strtolower($header) === 'host'
                 && $this->uri->getHost()
             ) {
                 return [$this->getHostFromUri()];
@@ -65,7 +63,7 @@ class Request implements RequestInterface
             return [];
         }
 
-        $header = $this->headerNames[strtolower($name)];
+        $header = $this->headerNames[strtolower($header)];
 
         return $this->headers[$header];
     }

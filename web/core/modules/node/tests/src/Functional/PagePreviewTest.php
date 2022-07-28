@@ -45,16 +45,7 @@ class PagePreviewTest extends NodeTestBase {
   ];
 
   /**
-   * The theme to install as the default for testing.
-   *
-   * @var string
-   *
-   * @todo The fact that PagePreviewTest::testPagePreview() makes assertions
-   *   related to the node type being used for a body class makes Stark a bad
-   *   fit as a base theme. Change the default theme to Starterkit once it is
-   *   stable.
-   *
-   * @see https://www.drupal.org/project/drupal/issues/3274077
+   * {@inheritdoc}
    */
   protected $defaultTheme = 'classy';
 

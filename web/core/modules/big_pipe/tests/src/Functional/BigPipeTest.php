@@ -42,6 +42,11 @@ class BigPipeTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
+  protected $dumpHeaders = TRUE;
+
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 

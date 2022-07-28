@@ -19,7 +19,7 @@ class BlockSystemBrandingTest extends BlockTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * {@inheritdoc}
@@ -38,31 +38,29 @@ class BlockSystemBrandingTest extends BlockTestBase {
    * Tests system branding block configuration.
    */
   public function testSystemBrandingSettings() {
-    $site_logo_xpath = '//div[@id="block-site-branding"]/a/img';
-    $site_name_xpath = '//div[@id="block-site-branding"]/a[text() = "Drupal"]';
-    $site_slogan_xpath = '//div[@id="block-site-branding"]/descendant::text()[last()]';
+    $site_logo_xpath = '//div[@id="block-site-branding"]//a[@class="site-logo"]';
+    $site_name_xpath = '//div[@id="block-site-branding"]//div[@class="site-name"]';
+    $site_slogan_xpath = '//div[@id="block-site-branding"]//div[@class="site-slogan"]';
 
     // Set default block settings.
     $this->drupalGet('');
     $site_logo_element = $this->xpath($site_logo_xpath);
     $site_name_element = $this->xpath($site_name_xpath);
-
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
     // Test that all branding elements are displayed.
     $this->assertNotEmpty($site_logo_element, 'The branding block logo was found.');
     $this->assertNotEmpty($site_name_element, 'The branding block site name was found.');
-    $this->assertSession()->elementTextContains('xpath', $site_slogan_xpath, 'Community plumbing');
+    $this->assertNotEmpty($site_slogan_element, 'The branding block slogan was found.');
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config:system.site');
-    // Just this once, assert that the img src of the logo is as expected.
-    $theme_path = \Drupal::service('extension.list.theme')->getPath($this->defaultTheme);
-    $this->assertSession()->elementAttributeContains('xpath', $site_logo_xpath, 'src', $theme_path . '/logo.svg');
 
     // Be sure the slogan is XSS-filtered.
     $this->config('system.site')
       ->set('slogan', '<script>alert("Community carpentry");</script>')
       ->save();
     $this->drupalGet('');
-    $this->assertSession()->elementTextContains('xpath', $site_slogan_xpath, 'alert("Community carpentry");');
-    $this->assertSession()->responseNotContains('<script>alert("Community carpentry");</script>');
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
+    $this->assertEquals('alert("Community carpentry");', $site_slogan_element[0]->getText(), 'The site slogan was XSS-filtered.');
+
     // Turn just the logo off.
     $this->config('block.block.site-branding')
       ->set('settings.use_site_logo', 0)
@@ -70,11 +68,11 @@ class BlockSystemBrandingTest extends BlockTestBase {
     $this->drupalGet('');
     $site_logo_element = $this->xpath($site_logo_xpath);
     $site_name_element = $this->xpath($site_name_xpath);
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
     // Re-test all branding elements.
     $this->assertEmpty($site_logo_element, 'The branding block logo was disabled.');
     $this->assertNotEmpty($site_name_element, 'The branding block site name was found.');
-    $this->assertSession()->elementTextContains('xpath', $site_slogan_xpath, 'alert("Community carpentry");');
-    $this->assertSession()->responseNotContains('<script>alert("Community carpentry");</script>');
+    $this->assertNotEmpty($site_slogan_element, 'The branding block slogan was found.');
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config:system.site');
 
     // Turn just the site name off.
@@ -85,11 +83,11 @@ class BlockSystemBrandingTest extends BlockTestBase {
     $this->drupalGet('');
     $site_logo_element = $this->xpath($site_logo_xpath);
     $site_name_element = $this->xpath($site_name_xpath);
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
     // Re-test all branding elements.
     $this->assertNotEmpty($site_logo_element, 'The branding block logo was found.');
     $this->assertEmpty($site_name_element, 'The branding block site name was disabled.');
-    $this->assertSession()->elementTextContains('xpath', $site_slogan_xpath, 'alert("Community carpentry");');
-    $this->assertSession()->responseNotContains('<script>alert("Community carpentry");</script>');
+    $this->assertNotEmpty($site_slogan_element, 'The branding block slogan was found.');
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config:system.site');
 
     // Turn just the site slogan off.
@@ -100,10 +98,11 @@ class BlockSystemBrandingTest extends BlockTestBase {
     $this->drupalGet('');
     $site_logo_element = $this->xpath($site_logo_xpath);
     $site_name_element = $this->xpath($site_name_xpath);
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
     // Re-test all branding elements.
     $this->assertNotEmpty($site_logo_element, 'The branding block logo was found.');
     $this->assertNotEmpty($site_name_element, 'The branding block site name was found.');
-    $this->assertSession()->elementTextNotContains('xpath', $site_slogan_xpath, 'Community carpentry');
+    $this->assertEmpty($site_slogan_element, 'The branding block slogan was disabled.');
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config:system.site');
 
     // Turn the site name and the site slogan off.
@@ -114,10 +113,11 @@ class BlockSystemBrandingTest extends BlockTestBase {
     $this->drupalGet('');
     $site_logo_element = $this->xpath($site_logo_xpath);
     $site_name_element = $this->xpath($site_name_xpath);
+    $site_slogan_element = $this->xpath($site_slogan_xpath);
     // Re-test all branding elements.
     $this->assertNotEmpty($site_logo_element, 'The branding block logo was found.');
     $this->assertEmpty($site_name_element, 'The branding block site name was disabled.');
-    $this->assertSession()->elementTextNotContains('xpath', $site_slogan_xpath, 'Community carpentry');
+    $this->assertEmpty($site_slogan_element, 'The branding block slogan was disabled.');
     $this->assertSession()->responseHeaderContains('X-Drupal-Cache-Tags', 'config:system.site');
   }
 

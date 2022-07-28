@@ -19,7 +19,7 @@ class UserFieldsAccessChangeTest extends UserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * Views used by this test.
@@ -60,10 +60,11 @@ class UserFieldsAccessChangeTest extends UserTestBase {
    */
   public function testUserNameLink() {
     $test_user = $this->drupalCreateUser();
-    $xpath = "//td/a[.='" . $test_user->getAccountName() . "']/@href[.='" . $test_user->toUrl()->toString() . "']";
+    $xpath = "//td/a[.='" . $test_user->getAccountName() . "'][@class='username']/@href[.='" . $test_user->toUrl()->toString() . "']";
 
     $attributes = [
       'title' => 'View user profile.',
+      'class' => 'username',
     ];
     $link = $test_user->toLink(NULL, 'canonical', ['attributes' => $attributes])->toString();
 

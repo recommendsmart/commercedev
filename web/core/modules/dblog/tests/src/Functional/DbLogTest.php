@@ -11,7 +11,6 @@ use Drupal\Core\Url;
 use Drupal\dblog\Controller\DbLogController;
 use Drupal\error_test\Controller\ErrorTestController;
 use Drupal\Tests\BrowserTestBase;
-use Drupal\Tests\system\Functional\Menu\AssertBreadcrumbTrait;
 
 /**
  * Generate events and verify dblog entries; verify user access to log reports
@@ -21,7 +20,6 @@ use Drupal\Tests\system\Functional\Menu\AssertBreadcrumbTrait;
  */
 class DbLogTest extends BrowserTestBase {
   use FakeLogEntries;
-  use AssertBreadcrumbTrait;
 
   /**
    * Modules to enable.
@@ -40,7 +38,7 @@ class DbLogTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * A user with some relevant administrative permissions.
@@ -368,13 +366,9 @@ class DbLogTest extends BrowserTestBase {
     $query = Database::getConnection()->select('watchdog');
     $query->addExpression('MIN([wid])');
     $wid = $query->execute()->fetchField();
-    $trail = [
-      '' => 'Home',
-      'admin' => 'Administration',
-      'admin/reports' => 'Reports',
-      'admin/reports/dblog' => 'Recent log messages',
-    ];
-    $this->assertBreadcrumb('admin/reports/dblog/event/' . $wid, $trail);
+    $this->drupalGet('admin/reports/dblog/event/' . $wid);
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEquals('Recent log messages', current($this->xpath($xpath))->getText(), 'DBLogs link displayed at breadcrumb in event page.');
   }
 
   /**

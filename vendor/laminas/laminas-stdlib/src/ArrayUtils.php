@@ -5,7 +5,6 @@ declare(strict_types=1);
 
 namespace Laminas\Stdlib;
 
-use Iterator;
 use Laminas\Stdlib\ArrayUtils\MergeRemoveKey;
 use Laminas\Stdlib\ArrayUtils\MergeReplaceKeyInterface;
 use Traversable;
@@ -217,19 +216,18 @@ abstract class ArrayUtils
     }
 
     /**
+     * Convert an iterator to an array.
+     *
      * Converts an iterator to an array. The $recursive flag, on by default,
      * hints whether or not you want to do so recursively.
      *
-     * @template TKey
-     * @template TValue
-     * @param  iterable<TKey, TValue> $iterator  The array or Traversable object to convert
-     * @param  bool                   $recursive Recursively check all nested structures
+     * @param  array|Traversable  $iterator     The array or Traversable object to convert
+     * @param  bool               $recursive    Recursively check all nested structures
      * @throws Exception\InvalidArgumentException If $iterator is not an array or a Traversable object.
-     * @return array<TKey, TValue>
+     * @return array
      */
     public static function iteratorToArray($iterator, $recursive = true)
     {
-        /** @psalm-suppress DocblockTypeContradiction */
         if (! is_array($iterator) && ! $iterator instanceof Traversable) {
             throw new Exception\InvalidArgumentException(__METHOD__ . ' expects an array or Traversable object');
         }
@@ -242,15 +240,8 @@ abstract class ArrayUtils
             return iterator_to_array($iterator);
         }
 
-        if (
-            is_object($iterator)
-            && ! $iterator instanceof Iterator
-            && method_exists($iterator, 'toArray')
-        ) {
-            /** @psalm-var array<TKey, TValue> $array */
-            $array = $iterator->toArray();
-
-            return $array;
+        if (is_object($iterator) && method_exists($iterator, 'toArray')) {
+            return $iterator->toArray();
         }
 
         $array = [];
@@ -272,8 +263,6 @@ abstract class ArrayUtils
 
             $array[$key] = $value;
         }
-
-        /** @psalm-var array<TKey, TValue> $array */
 
         return $array;
     }

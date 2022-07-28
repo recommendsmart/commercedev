@@ -52,7 +52,8 @@
             "cweagans/composer-patches": true,
             "drupal/core-composer-scaffold": true,
             "oomphinc/composer-installers-extender": true,
-            "zaporylie/composer-drupal-optimizations": true
+            "zaporylie/composer-drupal-optimizations": true,
+            "drupal/core-project-message": true
         }
     },
     "require": {
@@ -66,7 +67,9 @@
         "drupal/commerce_demo": "^3.0",
         "drupal/config_delete": "^1.17",
         "drupal/core": "^9.1",
-        "drupal/core-composer-scaffold": "^9.1",
+        "drupal/core-composer-scaffold": "9.3.19",
+        "drupal/core-project-message": "9.3.19",
+        "drupal/core-recommended": "9.3.19",
         "drupal/default_content": "2.0.0-alpha1",
         "drush/drush": "^10.3",
         "vlucas/phpdotenv": "^5.1",

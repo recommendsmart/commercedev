@@ -4,7 +4,6 @@ namespace Drupal\Tests\node\Functional;
 
 use Drupal\comment\Tests\CommentTestTrait;
 use Drupal\Component\Utility\Html;
-use Drupal\Tests\system\Functional\Menu\AssertBreadcrumbTrait;
 
 /**
  * Tests node title.
@@ -14,7 +13,6 @@ use Drupal\Tests\system\Functional\Menu\AssertBreadcrumbTrait;
 class NodeTitleTest extends NodeTestBase {
 
   use CommentTestTrait;
-  use AssertBreadcrumbTrait;
 
   /**
    * Modules to enable.
@@ -26,7 +24,7 @@ class NodeTitleTest extends NodeTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'stark';
+  protected $defaultTheme = 'classy';
 
   /**
    * A user with permission to bypass access content.
@@ -72,13 +70,12 @@ class NodeTitleTest extends NodeTestBase {
     $this->assertEquals($this->xpath($xpath)[0]->getText(), $node->label() . ' | Drupal', 'Page title is equal to node title.');
 
     // Test breadcrumb in comment preview.
-    $this->assertBreadcrumb('comment/reply/node/' . $node->id() . '/comment', [
-      '' => 'Home',
-      'node/' . $node->id() => $node->label(),
-    ]);
+    $this->drupalGet('comment/reply/node/' . $node->id() . '/comment');
+    $xpath = '//nav[@class="breadcrumb"]/ol/li[last()]/a';
+    $this->assertEquals($this->xpath($xpath)[0]->getText(), $node->label(), 'Node breadcrumb is equal to node title.');
 
     // Verify that node preview title is equal to node title.
-    $this->assertSession()->elementTextEquals('xpath', "//article/h2/a/span", $node->label());
+    $this->assertSession()->elementTextEquals('xpath', "//article[contains(concat(' ', normalize-space(@class), ' '), ' node--type-{$node->bundle()} ')]/h2/a/span", $node->label());
 
     // Test node title is clickable on teaser list (/node).
     $this->drupalGet('node');

@@ -20,7 +20,6 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
-        'c9d07b32a2e02bc0fc582d4f0c1b56cc' => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src/autoload.php',
         '07d7f1a47144818725fd8d91a907ac57' => __DIR__ . '/..' . '/laminas/laminas-diactoros/src/functions/create_uploaded_file.php',
         'da94ac5d3ca7d2dbab84ce561ce72bfd' => __DIR__ . '/..' . '/laminas/laminas-diactoros/src/functions/marshal_headers_from_sapi.php',
         '3d97c8dcdfba8cb85d3b34f116bb248b' => __DIR__ . '/..' . '/laminas/laminas-diactoros/src/functions/marshal_method_from_sapi.php',
@@ -159,7 +158,6 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
             'Lcobucci\\JWT\\' => 13,
             'Lcobucci\\Clock\\' => 15,
             'Laminas\\Stdlib\\' => 15,
-            'Laminas\\ServiceManager\\' => 23,
             'Laminas\\Feed\\' => 13,
             'Laminas\\Escaper\\' => 16,
             'Laminas\\Diactoros\\' => 18,
@@ -199,6 +197,7 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
             'Drupal\\Driver\\' => 14,
             'Drupal\\Core\\' => 12,
             'Drupal\\Composer\\Plugin\\Scaffold\\' => 32,
+            'Drupal\\Composer\\Plugin\\ProjectMessage\\' => 38,
             'Drupal\\Component\\' => 17,
             'Drupal\\' => 7,
             'DrupalPractice\\' => 15,
@@ -533,10 +532,6 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-stdlib/src',
         ),
-        'Laminas\\ServiceManager\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/laminas/laminas-servicemanager/src',
-        ),
         'Laminas\\Feed\\' => 
         array (
             0 => __DIR__ . '/..' . '/laminas/laminas-feed/src',
@@ -621,6 +616,10 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
         'Drupal\\Composer\\Plugin\\Scaffold\\' => 
         array (
             0 => __DIR__ . '/..' . '/drupal/core-composer-scaffold',
+        ),
+        'Drupal\\Composer\\Plugin\\ProjectMessage\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/drupal/core-project-message',
         ),
         'Drupal\\Component\\' => 
         array (
@@ -851,6 +850,9 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
         'Drupal\\Core\\Cache\\DatabaseCacheTagsChecksum' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Cache/DatabaseCacheTagsChecksum.php',
         'Drupal\\Core\\Database\\Connection' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Connection.php',
         'Drupal\\Core\\Database\\Database' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Database.php',
+        'Drupal\\Core\\Database\\Driver\\mysql\\Connection' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Driver/mysql/Connection.php',
+        'Drupal\\Core\\Database\\Driver\\pgsql\\Connection' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Driver/pgsql/Connection.php',
+        'Drupal\\Core\\Database\\Driver\\sqlite\\Connection' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Driver/sqlite/Connection.php',
         'Drupal\\Core\\Database\\Statement' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/Statement.php',
         'Drupal\\Core\\Database\\StatementInterface' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/Database/StatementInterface.php',
         'Drupal\\Core\\DependencyInjection\\Container' => __DIR__ . '/../..' . '/web/core/lib/Drupal/Core/DependencyInjection/Container.php',
@@ -1288,7 +1290,6 @@ class ComposerStaticInitee893bfc9e5b9226f8f89802578c89ad
         'PharIo\\Version\\VersionConstraintParser' => __DIR__ . '/..' . '/phar-io/version/src/VersionConstraintParser.php',
         'PharIo\\Version\\VersionConstraintValue' => __DIR__ . '/..' . '/phar-io/version/src/VersionConstraintValue.php',
         'PharIo\\Version\\VersionNumber' => __DIR__ . '/..' . '/phar-io/version/src/VersionNumber.php',
-        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
         'SebastianBergmann\\CliParser\\AmbiguousOptionException' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/AmbiguousOptionException.php',
         'SebastianBergmann\\CliParser\\Exception' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/Exception.php',
         'SebastianBergmann\\CliParser\\OptionDoesNotAllowArgumentException' => __DIR__ . '/..' . '/sebastian/cli-parser/src/exceptions/OptionDoesNotAllowArgumentException.php',

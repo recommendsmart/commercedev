@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Laminas\Feed\Writer\Renderer\Entry;
 
 use DateTime;
@@ -21,6 +19,9 @@ use function preg_replace;
 use function str_replace;
 use function strlen;
 use function strtotime;
+use function version_compare;
+
+use const PHP_VERSION;
 
 class Atom extends Renderer\AbstractRenderer implements Renderer\RendererInterface
 {
@@ -341,7 +342,8 @@ class Atom extends Renderer\AbstractRenderer implements Renderer\RendererInterfa
         $element = $dom->createElement('content');
         $element->setAttribute('type', 'xhtml');
         $xhtmlElement = $this->_loadXhtml($content);
-        $xhtml        = $dom->importNode($xhtmlElement, true);
+        $deep         = version_compare(PHP_VERSION, '7', 'ge') ? 1 : true;
+        $xhtml        = $dom->importNode($xhtmlElement, $deep);
         $element->appendChild($xhtml);
         $root->appendChild($element);
     }

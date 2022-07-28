@@ -45,8 +45,8 @@ class ExposedFormTest extends ViewTestBase {
    */
   protected $nodes = [];
 
-  protected function setUp($import_test_views = TRUE, $modules = ['views_test_config']): void {
-    parent::setUp($import_test_views, $modules);
+  protected function setUp($import_test_views = TRUE): void {
+    parent::setUp($import_test_views);
 
     $this->enableViewsTestModule();
 

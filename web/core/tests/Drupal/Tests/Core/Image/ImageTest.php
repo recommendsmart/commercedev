@@ -116,8 +116,6 @@ class ImageTest extends UnitTestCase {
     }
 
     $this->image = new Image($this->toolkit, $this->source);
-
-    return $this->image;
   }
 
   /**
@@ -142,8 +140,6 @@ class ImageTest extends UnitTestCase {
       ->will($this->returnValue($this->toolkitOperation));
 
     $this->image = new Image($this->toolkit, $this->source);
-
-    return $this->image;
   }
 
   /**

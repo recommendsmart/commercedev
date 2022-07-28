@@ -415,7 +415,6 @@ class TestPathBasedBreadcrumbBuilder extends PathBasedBreadcrumbBuilder {
 
   public function setStringTranslation(TranslationInterface $string_translation) {
     $this->stringTranslation = $string_translation;
-    return $this;
   }
 
   public function setLinkGenerator(LinkGeneratorInterface $link_generator) {
