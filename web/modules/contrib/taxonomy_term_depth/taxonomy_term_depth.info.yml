@@ -1,6 +1,5 @@
 type: module
 name: Taxonomy term depth
-core: 8.x
 description: Provides field for storing taxonomy depth value and some wrappers integration with modules
 package: Taxonomy
 dependencies:
