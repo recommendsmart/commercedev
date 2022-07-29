@@ -124,6 +124,12 @@ class LegacyEmailBuilder extends EmailBuilderBase implements ContainerFactoryPlu
   protected function emailFromArray(EmailInterface $email, array $message) {
     $email->setSubject($message['subject']);
 
+    // Add attachments.
+    $attachments = $message['params']['attachments'] ?? [];
+    foreach ($attachments as $attachment) {
+      $email->attachFromPath($attachment['filepath'], $attachment['filename'] ?? NULL, $attachment['filemime'] ?? NULL);
+    }
+
     // Add Address headers from message array to Email object.
     // The "To" header will be set via build().
     foreach (self::HEADERS as $name => $key) {

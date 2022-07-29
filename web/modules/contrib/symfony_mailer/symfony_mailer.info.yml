@@ -6,8 +6,3 @@ package: Mail
 configure: entity.mailer_policy.collection
 dependencies:
   - drupal:filter
-
-# Information added by Drupal.org packaging script on 2022-06-18
-version: '1.0.0-alpha10'
-project: 'symfony_mailer'
-datestamp: 1655569042
