@@ -7,20 +7,20 @@ use Drupal\views\Plugin\views\style\StylePluginBase;
 use Drupal\Component\Utility\Html;
 
 /**
- * Style plugin to render each item in an ordered or unordered list.
+ * Style plugin to render each item as a row in a Bootstrap thumbnail.
  *
  * @ingroup views_style_plugins
  *
  * @ViewsStyle(
- *   id = "views_bootstrap_grid",
- *   title = @Translation("Bootstrap Grid"),
- *   help = @Translation("Displays rows in a Bootstrap Grid layout"),
- *   theme = "views_bootstrap_grid",
+ *   id = "views_bootstrap_thumbnail",
+ *   title = @Translation("Bootstrap Thumbnails"),
+ *   help = @Translation("Displays rows in a Bootstrap Grid layout with thumbnails"),
+ *   theme = "views_bootstrap_thumbnail",
  *   theme_file = "../views_bootstrap.theme.inc",
  *   display_types = {"normal"}
  * )
  */
-class ViewsBootstrapGrid extends StylePluginBase {
+class ViewsBootstrapThumbnail extends StylePluginBase {
   /**
    * Overrides \Drupal\views\Plugin\views\style\StylePluginBase::usesRowPlugin.
    *
@@ -142,7 +142,7 @@ class ViewsBootstrapGrid extends StylePluginBase {
     parent::buildOptionsForm($form, $form_state);
 
     $form['help'] = [
-      '#markup' => $this->t('The Bootstrap grid displays content in a responsive, mobile first fluid grid (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/grid']),
+      '#markup' => $this->t('The Bootstrap thumbnails extends the grid display with the thumbnail component to showcase linked images (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/thumbnail']),
       '#weight' => -99,
     ];
 
@@ -187,22 +187,6 @@ class ViewsBootstrapGrid extends StylePluginBase {
     if ($this->usesFields()) {
       $form['row_class_custom']['#description'] .= ' ' . $this->t('You may use field tokens from as per the "Replacement patterns" used in "Rewrite the output of this field" for all fields.');
     }
-    $form['columns'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Base number of columns'),
-      '#default_value' => $this->options['columns'],
-      '#required' => TRUE,
-      '#options' => [
-        1 => 1,
-        2 => 2,
-        3 => 3,
-        4 => 4,
-        6 => 6,
-        12 => 12,
-        999 => $this->t('all'),
-      ],
-      '#description' => $this->t('Choose the number of columns that views will wrap in a single row. This will be reflected in the HTML structure rendered regardless of the device size. If selecting "all" then use the alternative template.'),
-    ];
 
     foreach (['xs', 'sm', 'md', 'lg'] as $size) {
       $form["col_${size}"] = [

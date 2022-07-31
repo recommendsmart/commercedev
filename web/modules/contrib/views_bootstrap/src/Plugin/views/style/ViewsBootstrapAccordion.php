@@ -40,6 +40,8 @@ class ViewsBootstrapAccordion extends StylePluginBase {
   protected function defineOptions() {
     $options = parent::defineOptions();
     $options['panel_title_field'] = ['default' => NULL];
+    $options['behavior'] = ['default' => 'closed'];
+    $options['label_field'] = ['default' => NULL];
 
     return $options;
   }
@@ -49,46 +51,38 @@ class ViewsBootstrapAccordion extends StylePluginBase {
    */
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
-    if (isset($form['grouping'])) {
-      unset($form['grouping']);
 
-      $form['panel_title_field'] = [
-        '#type' => 'select',
-        '#title' => $this->t('Panel title field'),
-        '#options' => $this->displayHandler->getFieldLabels(TRUE),
-        '#required' => TRUE,
-        '#default_value' => $this->options['panel_title_field'],
-        '#description' => $this->t('Select the field that will be used as the accordian panel titles.'),
-      ];
-    }
-    $options_select = [
-      '0' => $this->t('Collapsed'),
-      '1' => $this->t('Uncollapsed'),
+    $form['help'] = [
+      '#markup' => $this->t('The Bootstrap accordion displays content in collapsible panels (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/accordion']),
+      '#weight' => -99,
     ];
-    $form['collapse'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Collapse options'),
-    ];
-    $form['collapse']['first'] = [
+    $form['panel_title_field'] = [
       '#type' => 'select',
-      '#title' => $this->t('First element'),
-      '#options' => $options_select,
-      '#default_value' => $this->options['collapse']['first'],
-      '#description' => $this->t('To collapse/uncollapse the first element of the list. If there is only one item, first element settings prevails than the others (middle, last)'),
+      '#title' => $this->t('Panel title field'),
+      '#options' => $this->displayHandler->getFieldLabels(TRUE),
+      '#required' => TRUE,
+      '#default_value' => $this->options['panel_title_field'],
+      '#description' => $this->t('Select the field that will be used as the accordion panel titles.'),
     ];
-    $form['collapse']['middle'] = [
+    $form['label_field'] = [
       '#type' => 'select',
-      '#title' => $this->t('Middle elements'),
-      '#options' => $options_select,
-      '#default_value' => $this->options['collapse']['middle'],
-      '#description' => $this->t('To collapse/uncollapse the middle elements of the list.'),
+      '#title' => $this->t('Label field'),
+      '#options' => ['' => $this->t('- None -')] + $this->displayHandler->getFieldLabels(TRUE),
+      '#required' => FALSE,
+      '#default_value' => $this->options['label_field'],
+      '#description' => $this->t('Select the field that will be used as the label.'),
     ];
-    $form['collapse']['last'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Last element'),
-      '#options' => $options_select,
-      '#default_value' => $this->options['collapse']['last'],
-      '#description' => $this->t('To collapse/uncollapse the last element of the list.'),
+    $form['behavior'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Collapse Options'),
+      '#options' => [
+        'closed' => $this->t('All Items Closed'),
+        'first' => $this->t('First Item Open'),
+        'all' => $this->t('All Items Open'),
+      ],
+      '#required' => TRUE,
+      '#description' => $this->t('Default panel state for collapse behavior.'),
+      '#default_value' => $this->options['behavior'],
     ];
   }
 

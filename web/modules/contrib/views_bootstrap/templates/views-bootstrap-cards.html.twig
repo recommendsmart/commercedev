@@ -10,22 +10,22 @@
  * @ingroup views_templates
  */
 #}
-
-<div class="card-group">
+{{ attach_library('views_bootstrap/cards') }}
+<div {{ attributes.addClass(classes) }}>
   {% for key, row in rows -%}
-  <div class="card">
-    {# Show image #}
-    {% if row.image %}
+    <div  {{ row.attributes.addClass(classes) }}>
+      {# Show image #}
+      {% if row.image %}
         {{ row.image }}
-    {% endif %}
-    {% if row.title %}
-      <div class="card-header">{{ row.title }}</div>
-    {% endif %}
-    {% if row.content %}
-      <div class="card-body">
-        {{ row.content }}
-      </div>
-    {% endif %}
-  </div>
+      {% endif %}
+      {% if row.title %}
+        <div class="card-header">{{ row.title }}</div>
+      {% endif %}
+      {% if row.content %}
+        <div class="card-body">
+          {{ row.content }}
+        </div>
+      {% endif %}
+    </div>
   {%- endfor %}
 </div>
