@@ -103,6 +103,7 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
             'Symfony\\Component\\Routing\\' => 26,
             'Symfony\\Component\\Process\\' => 26,
             'Symfony\\Component\\Mime\\' => 23,
+            'Symfony\\Component\\Mailer\\Bridge\\Google\\' => 39,
             'Symfony\\Component\\Mailer\\' => 25,
             'Symfony\\Component\\Lock\\' => 23,
             'Symfony\\Component\\HttpKernel\\' => 29,
@@ -367,6 +368,10 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'Symfony\\Component\\Mime\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/mime',
+        ),
+        'Symfony\\Component\\Mailer\\Bridge\\Google\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/google-mailer',
         ),
         'Symfony\\Component\\Mailer\\' => 
         array (
