@@ -5925,6 +5925,62 @@
             "install-path": "../../web/modules/contrib/default_content"
         },
         {
+            "name": "drupal/easy_email",
+            "version": "2.1.0-alpha1",
+            "version_normalized": "2.1.0.0-alpha1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/easy_email.git",
+                "reference": "2.1.0-alpha1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/easy_email-2.1.0-alpha1.zip",
+                "reference": "2.1.0-alpha1",
+                "shasum": "1868bab7617a00822bd956e8c887768e1011b890"
+            },
+            "require": {
+                "drupal/core": "^9.2",
+                "drupal/jquery_ui_resizable": "^1.0",
+                "drupal/mailsystem": "^4.0",
+                "drupal/swiftmailer": "^2.0",
+                "drupal/symfony_mailer": "*",
+                "drupal/symfony_mailer_bc": "*",
+                "drupal/token": "^1.0"
+            },
+            "require-dev": {
+                "drupal/commerce": "^2.0"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.1.0-alpha1",
+                    "datestamp": "1647194452",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "zengenuity",
+                    "homepage": "https://www.drupal.org/user/326925"
+                }
+            ],
+            "description": "Easy Email is an HTML email system for Drupal, designed to be as simple as possible to configure, with a robust set of features.",
+            "homepage": "https://www.drupal.org/project/easy_email",
+            "support": {
+                "source": "https://git.drupalcode.org/project/easy_email"
+            },
+            "install-path": "../../web/modules/contrib/easy_email"
+        },
+        {
             "name": "drupal/entity",
             "version": "1.3.0",
             "version_normalized": "1.3.0.0",
@@ -6918,6 +6974,62 @@
             "install-path": "../../web/modules/contrib/jquery_ui_datepicker"
         },
         {
+            "name": "drupal/jquery_ui_resizable",
+            "version": "1.0.0",
+            "version_normalized": "1.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/jquery_ui_resizable.git",
+                "reference": "8.x-1.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/jquery_ui_resizable-8.x-1.0.zip",
+                "reference": "8.x-1.0",
+                "shasum": "f96d0937e1cc4191536aa8e46f713cfe36cf365a"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9",
+                "drupal/jquery_ui": "*"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.0",
+                    "datestamp": "1607009468",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "bnjmnm",
+                    "homepage": "https://www.drupal.org/user/2369194"
+                },
+                {
+                    "name": "lauriii",
+                    "homepage": "https://www.drupal.org/user/1078742"
+                },
+                {
+                    "name": "zrpnr",
+                    "homepage": "https://www.drupal.org/user/1448368"
+                }
+            ],
+            "description": "Provides jQuery UI Resizable library.",
+            "homepage": "https://www.drupal.org/project/jquery_ui_resizable",
+            "support": {
+                "source": "https://git.drupalcode.org/project/jquery_ui_resizable"
+            },
+            "install-path": "../../web/modules/contrib/jquery_ui_resizable"
+        },
+        {
             "name": "drupal/jquery_ui_slider",
             "version": "1.1.0",
             "version_normalized": "1.1.0.0",
@@ -7355,6 +7467,73 @@
                 "issues": "https://www.drupal.org/project/issues/layout_builder_restrictions"
             },
             "install-path": "../../web/modules/contrib/layout_builder_restrictions"
+        },
+        {
+            "name": "drupal/mailsystem",
+            "version": "4.4.0",
+            "version_normalized": "4.4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/mailsystem.git",
+                "reference": "8.x-4.4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/mailsystem-8.x-4.4.zip",
+                "reference": "8.x-4.4",
+                "shasum": "49b2e9efd090cdb4a282c7638b1c76d6723c47b6"
+            },
+            "require": {
+                "drupal/core": "^9 || ^10"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-4.4",
+                    "datestamp": "1657576306",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Berdir",
+                    "homepage": "https://www.drupal.org/user/214652"
+                },
+                {
+                    "name": "Les Lim",
+                    "homepage": "https://www.drupal.org/user/84263"
+                },
+                {
+                    "name": "Manuel Garcia",
+                    "homepage": "https://www.drupal.org/user/213194"
+                },
+                {
+                    "name": "miro_dietiker",
+                    "homepage": "https://www.drupal.org/user/227761"
+                },
+                {
+                    "name": "Nafes",
+                    "homepage": "https://www.drupal.org/user/2489926"
+                },
+                {
+                    "name": "pillarsdotnet",
+                    "homepage": "https://www.drupal.org/user/36148"
+                }
+            ],
+            "description": "Mail System",
+            "homepage": "https://www.drupal.org/project/mailsystem",
+            "support": {
+                "source": "https://git.drupalcode.org/project/mailsystem"
+            },
+            "install-path": "../../web/modules/contrib/mailsystem"
         },
         {
             "name": "drupal/media_library_form_element",
@@ -8099,6 +8278,79 @@
             "install-path": "../../web/modules/contrib/state_machine"
         },
         {
+            "name": "drupal/swiftmailer",
+            "version": "2.2.0",
+            "version_normalized": "2.2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/swiftmailer.git",
+                "reference": "8.x-2.2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/swiftmailer-8.x-2.2.zip",
+                "reference": "8.x-2.2",
+                "shasum": "54269f7ceb6364e4fb953cf67b52b555d748d09c"
+            },
+            "require": {
+                "drupal/core": "^8.9.11 || ^9.0.10",
+                "drupal/mailsystem": "^4.1.0",
+                "egulias/email-validator": "^2.0||^3",
+                "html2text/html2text": "^4.0.1",
+                "php": ">=7.0.0",
+                "swiftmailer/swiftmailer": "^6.1.3",
+                "tijsverkoyen/css-to-inline-styles": "^2.2"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-2.2",
+                    "datestamp": "1639141915",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "AdamPS",
+                    "homepage": "https://www.drupal.org/user/2650563"
+                },
+                {
+                    "name": "Anybody",
+                    "homepage": "https://www.drupal.org/user/291091"
+                },
+                {
+                    "name": "B-Prod",
+                    "homepage": "https://www.drupal.org/user/407852"
+                },
+                {
+                    "name": "geek-merlin",
+                    "homepage": "https://www.drupal.org/user/229048"
+                },
+                {
+                    "name": "sbrattla",
+                    "homepage": "https://www.drupal.org/user/53422"
+                },
+                {
+                    "name": "webflo",
+                    "homepage": "https://www.drupal.org/user/254778"
+                }
+            ],
+            "description": "Swiftmailer",
+            "homepage": "https://www.drupal.org/project/swiftmailer",
+            "support": {
+                "source": "https://git.drupalcode.org/project/swiftmailer"
+            },
+            "install-path": "../../web/modules/contrib/swiftmailer"
+        },
+        {
             "name": "drupal/symfony_mailer",
             "version": "dev-1.x",
             "version_normalized": "dev-1.x",
@@ -8144,6 +8396,42 @@
                 "source": "https://git.drupalcode.org/project/symfony_mailer"
             },
             "install-path": "../../web/modules/contrib/symfony_mailer"
+        },
+        {
+            "name": "drupal/symfony_mailer_bc",
+            "version": "1.0.0-alpha10",
+            "version_normalized": "1.0.0.0-alpha10",
+            "require": {
+                "drupal/core": "^9.1",
+                "drupal/symfony_mailer": "*"
+            },
+            "type": "metapackage",
+            "extra": {
+                "drupal": {
+                    "version": "1.0.0-alpha10",
+                    "datestamp": "1655569040",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "AdamPS",
+                    "homepage": "https://www.drupal.org/user/2650563"
+                }
+            ],
+            "description": "Back-compatibility mapper for Symfony Mailer.",
+            "homepage": "https://www.drupal.org/project/symfony_mailer",
+            "support": {
+                "source": "https://git.drupalcode.org/project/symfony_mailer"
+            },
+            "install-path": null
         },
         {
             "name": "drupal/token",
@@ -13523,6 +13811,85 @@
                 "source": "https://github.com/stackphp/builder/tree/v1.0.6"
             },
             "install-path": "../stack/builder"
+        },
+        {
+            "name": "swiftmailer/swiftmailer",
+            "version": "v6.3.0",
+            "version_normalized": "6.3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/swiftmailer/swiftmailer.git",
+                "reference": "8a5d5072dca8f48460fce2f4131fcc495eec654c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/swiftmailer/swiftmailer/zipball/8a5d5072dca8f48460fce2f4131fcc495eec654c",
+                "reference": "8a5d5072dca8f48460fce2f4131fcc495eec654c",
+                "shasum": ""
+            },
+            "require": {
+                "egulias/email-validator": "^2.0|^3.1",
+                "php": ">=7.0.0",
+                "symfony/polyfill-iconv": "^1.0",
+                "symfony/polyfill-intl-idn": "^1.10",
+                "symfony/polyfill-mbstring": "^1.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.0",
+                "symfony/phpunit-bridge": "^4.4|^5.4"
+            },
+            "suggest": {
+                "ext-intl": "Needed to support internationalized email addresses"
+            },
+            "time": "2021-10-18T15:26:12+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "6.2-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "lib/swift_required.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris Corbyn"
+                },
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                }
+            ],
+            "description": "Swiftmailer, free feature-rich PHP mailer",
+            "homepage": "https://swiftmailer.symfony.com",
+            "keywords": [
+                "email",
+                "mail",
+                "mailer"
+            ],
+            "support": {
+                "issues": "https://github.com/swiftmailer/swiftmailer/issues",
+                "source": "https://github.com/swiftmailer/swiftmailer/tree/v6.3.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/swiftmailer/swiftmailer",
+                    "type": "tidelift"
+                }
+            ],
+            "abandoned": "symfony/mailer",
+            "install-path": "../swiftmailer/swiftmailer"
         },
         {
             "name": "symfony-cmf/routing",
