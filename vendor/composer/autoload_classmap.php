@@ -344,7 +344,7 @@ return array(
     'PHPUnit\\Util\\ErrorHandler' => $vendorDir . '/phpunit/phpunit/src/Util/ErrorHandler.php',
     'PHPUnit\\Util\\Exception' => $vendorDir . '/phpunit/phpunit/src/Util/Exception.php',
     'PHPUnit\\Util\\ExcludeList' => $vendorDir . '/phpunit/phpunit/src/Util/ExcludeList.php',
-    'PHPUnit\\Util\\FileLoader' => $vendorDir . '/phpunit/phpunit/src/Util/FileLoader.php',
+    'PHPUnit\\Util\\FileLoader' => $vendorDir . '/phpunit/phpunit/src/Util/Fileloader.php',
     'PHPUnit\\Util\\Filesystem' => $vendorDir . '/phpunit/phpunit/src/Util/Filesystem.php',
     'PHPUnit\\Util\\Filter' => $vendorDir . '/phpunit/phpunit/src/Util/Filter.php',
     'PHPUnit\\Util\\GlobalState' => $vendorDir . '/phpunit/phpunit/src/Util/GlobalState.php',
