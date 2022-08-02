@@ -81,6 +81,7 @@
         "drupal/pwa": "^1.5",
         "drupal/smtp": "^1.0",
         "drupal/views_bootstrap": "5.3",
+        "drupal/views_data_export": "^1.1",
         "drush/drush": "^10.3",
         "symfony/google-mailer": "^5.4",
         "vlucas/phpdotenv": "^5.1",
