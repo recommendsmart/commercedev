@@ -71,6 +71,7 @@
         "drupal/core-composer-scaffold": "9.4.4",
         "drupal/core-project-message": "9.4.4",
         "drupal/core-recommended": "9.4.4",
+        "drupal/custom_view_filters": "^2.0",
         "drupal/default_content": "2.0.0-alpha1",
         "drupal/easy_email": "^2.1@alpha",
         "drupal/gin": "^3.0@beta",

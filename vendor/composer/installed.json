@@ -5957,6 +5957,57 @@
             "install-path": "../../web/modules/contrib/ctools"
         },
         {
+            "name": "drupal/custom_view_filters",
+            "version": "2.0.0",
+            "version_normalized": "2.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/custom_view_filters.git",
+                "reference": "2.0.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/custom_view_filters-2.0.0.zip",
+                "reference": "2.0.0",
+                "shasum": "a2c3c9016937a7dee690c2816d5cdf48d8642ffe"
+            },
+            "require": {
+                "drupal/core": "^8.7.7 || ^9"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.0",
+                    "datestamp": "1616184107",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "rcodina",
+                    "homepage": "https://www.drupal.org/user/2635031"
+                },
+                {
+                    "name": "santilopez",
+                    "homepage": "https://www.drupal.org/user/3464347"
+                }
+            ],
+            "description": "Custom filters collection",
+            "homepage": "https://www.drupal.org/project/custom_view_filters",
+            "support": {
+                "source": "https://git.drupalcode.org/project/custom_view_filters"
+            },
+            "install-path": "../../web/modules/contrib/custom_view_filters"
+        },
+        {
             "name": "drupal/default_content",
             "version": "2.0.0-alpha1",
             "version_normalized": "2.0.0.0-alpha1",
