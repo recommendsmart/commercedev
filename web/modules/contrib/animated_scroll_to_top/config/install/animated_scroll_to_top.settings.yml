@@ -1,0 +1,7 @@
+animated_scroll_to_top_position: 1
+animated_scroll_to_top_button_bg_color: '#CCCCCC'
+animated_scroll_to_top_button_hover_bg_color: '#000000'
+animated_scroll_to_top_button_height: 50
+animated_scroll_to_top_button_width: 50
+animated_scroll_to_top_button_bottom: 50
+animated_scroll_to_top_button_position: 100

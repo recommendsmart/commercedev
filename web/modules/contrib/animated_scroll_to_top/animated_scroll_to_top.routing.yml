@@ -1,0 +1,9 @@
+animated_scroll_to_top.settings:
+  path: '/admin/config/user-interface/animated-scroll-to-top'
+  defaults:
+    _form: '\Drupal\animated_scroll_to_top\Form\AnimatedScrollToTopForm'
+    _title: 'Animated Scroll To Top'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

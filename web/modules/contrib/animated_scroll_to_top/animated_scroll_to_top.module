@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Animated scroll to top module.
+ */
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function animated_scroll_to_top_preprocess_page(&$variables) {
+  // If admin route, let's stop here.
+  if (\Drupal::service('router.admin_context')->isAdminRoute()) {
+    return;
+  }
+  // Load up config.
+  if ($config = \Drupal::config('animated_scroll_to_top.settings')) {
+    $variables['#attached']['library'][] = 'animated_scroll_to_top/animated_scroll_to_top';
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_position'] = $config->get('animated_scroll_to_top_position');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_bg_color'] = $config->get('animated_scroll_to_top_button_bg_color');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_hover_bg_color'] = $config->get('animated_scroll_to_top_button_hover_bg_color');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_height'] = $config->get('animated_scroll_to_top_button_height');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_width'] = $config->get('animated_scroll_to_top_button_width');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_bottom'] = $config->get('animated_scroll_to_top_button_bottom');
+    $variables['#attached']['drupalSettings']['animated_scroll_to_top_button_position'] = $config->get('animated_scroll_to_top_button_position');
+  }
+}
+
+

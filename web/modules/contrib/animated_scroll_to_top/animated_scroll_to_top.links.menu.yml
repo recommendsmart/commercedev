@@ -1,0 +1,6 @@
+animated_scroll_to_top.admin:
+  title: 'Animated Scroll To Top'
+  description: 'Animated scroll To Top settings'
+  parent: system.admin_config_ui
+  route_name: animated_scroll_to_top.settings
+

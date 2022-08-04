@@ -1,0 +1,7 @@
+.scrollup {
+  position: fixed;
+  text-indent: -9999px;
+  background: url('../images/arrow.png') center no-repeat;
+  border-radius: 5px;
+  display: none;
+}

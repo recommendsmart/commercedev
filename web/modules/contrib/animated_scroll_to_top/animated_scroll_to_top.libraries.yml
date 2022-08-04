@@ -1,0 +1,8 @@
+animated_scroll_to_top:
+  css:
+    theme:
+      css/animated_scroll_to_top.css: { }
+  js:
+    js/animated_scroll_to_top.js: { }
+  dependencies:
+    - core/jquery
