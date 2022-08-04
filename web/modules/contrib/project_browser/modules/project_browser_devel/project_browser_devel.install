@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for the project_browser_devel module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function project_browser_devel_install() {
+  // Set the new random data generator as plugin and keep the current one.
+  $configFactory = \Drupal::configFactory();
+  $current_source_plugin = $configFactory->getEditable('project_browser.admin_settings')
+    ->get('enabled_source');
+  $configFactory->getEditable('project_browser_devel.settings')
+    ->set('previous_enabled_source', $current_source_plugin)
+    ->save(TRUE);
+  $configFactory->getEditable('project_browser.admin_settings')
+    ->set('enabled_source', 'random_data')
+    ->save(TRUE);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function project_browser_devel_uninstall() {
+  // Set the previous plugin.
+  $configFactory = \Drupal::configFactory();
+  $current_source_plugin = $configFactory->getEditable('project_browser.admin_settings')
+    ->get('enabled_source');
+  if ($current_source_plugin == 'random_data') {
+    $previous_source_plugin = $configFactory->getEditable('project_browser_devel.settings')
+      ->get('previous_enabled_source');
+    $configFactory->getEditable('project_browser.admin_settings')
+      ->set('enabled_source', $previous_source_plugin ?? 'drupalorg_mockapi')
+      ->save(TRUE);
+  }
+}

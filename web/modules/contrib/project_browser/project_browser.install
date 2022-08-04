@@ -1,0 +1,227 @@
+<?php
+
+/**
+ * @file
+ * Contains install and update functions for Project Browser.
+ */
+
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Database\Database;
+
+/**
+ * Implements hook_schema().
+ *
+ * Database Table storing cached D.O. API results.
+ */
+function project_browser_schema() {
+  return [
+    'project_browser_projects' => [
+      'description' => 'Project browser project',
+      'fields' => [
+        'nid' => [
+          'description' => 'Primary Key: Project ID from Drupal.org.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'title' => [
+          'description' => 'Title',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'author' => [
+          'description' => 'Author name',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'created' => [
+          'description' => 'Created timestamp',
+          'type' => 'int',
+          'not null' => TRUE,
+        ],
+        'changed' => [
+          'description' => 'Changed timestamp',
+          'type' => 'int',
+          'not null' => TRUE,
+        ],
+        'project_usage_total' => [
+          'description' => 'Project usage total',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'maintenance_status' => [
+          'description' => 'The value of taxonomy_vocabulary_44',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'development_status' => [
+          'description' => 'The value of taxonomy_vocabulary_46',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'status' => [
+          'description' => 'Project status',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'field_security_advisory_coverage' => [
+          'description' => 'Security advisory coverage ',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'field_project_type' => [
+          'description' => 'Project type ',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+          'default' => '',
+        ],
+        'flag_project_star_user_count' => [
+          'description' => 'Number starred',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'project_data' => [
+          'description' => 'The entire project array, serialized',
+          'type' => 'blob',
+          'not null' => FALSE,
+          'size' => 'big',
+        ],
+      ],
+      'primary key' => ['nid'],
+    ],
+    'project_browser_categories' => [
+      'description' => 'project browser project categories',
+      'fields' => [
+        'tid' => [
+          'description' => ' Category TID from Drupal.org.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'pid' => [
+          'description' => 'Project nid',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+      ],
+      'primary key' => ['tid', 'pid'],
+    ],
+  ];
+}
+
+/**
+ * Inserts data into Project Browser module tables.
+ */
+function _project_browser_populate_from_fixture() {
+  $connection = Database::getConnection();
+  $module_path = \Drupal::service('module_handler')->getModule('project_browser')->getPath();
+  $most_recent_change = 0;
+
+  $projects = Json::decode(file_get_contents($module_path . '/fixtures/project_data.json'));
+  $projects_chunk = array_chunk($projects, 1000);
+  foreach ($projects_chunk as $chunk_projects) {
+    // Insert fixture data to the database.
+    $query = $connection->insert('project_browser_projects')->fields([
+      'nid',
+      'title',
+      'author',
+      'created',
+      'changed',
+      'project_usage_total',
+      'maintenance_status',
+      'development_status',
+      'status',
+      'field_security_advisory_coverage',
+      'flag_project_star_user_count',
+      'field_project_type',
+      'project_data',
+    ]);
+    foreach ($chunk_projects as $project) {
+      if ($project['changed'] > $most_recent_change) {
+        $most_recent_change = $project['changed'];
+      }
+      // Map from fixture format to the expected by the database.
+      $project_data = unserialize($project['project_data']);
+      $project['maintenance_status'] = $project_data['taxonomy_vocabulary_44']['id'];
+      $project['development_status'] = $project_data['taxonomy_vocabulary_46']['id'];
+
+      $query->values($project);
+    }
+    $query->execute();
+  }
+
+  $categories = Json::decode(file_get_contents($module_path . '/fixtures/categories.json'));
+  $category_query = $connection->insert('project_browser_categories')->fields([
+    'tid',
+    'pid',
+  ]);
+  foreach ($categories as $category) {
+    $category_query->values((array) $category);
+  }
+  $category_query->execute();
+
+  \Drupal::state()->set('project_browser.last_imported', $most_recent_change);
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Populates the project_browser_projects using a fixure with PHP serialized
+ * items.
+ */
+function project_browser_install() {
+  _project_browser_populate_from_fixture();
+}
+
+function project_browser_update_9001() {
+  $connection = Database::getConnection();
+  $connection->truncate('project_browser_projects')->execute();
+  $connection->truncate('project_browser_categories')->execute();
+  _project_browser_populate_from_fixture();
+}
+
+function project_browser_update_9002() {
+  $connection = Database::getConnection();
+  $connection->truncate('project_browser_projects')->execute();
+  $connection->truncate('project_browser_categories')->execute();
+  _project_browser_populate_from_fixture();
+}
+
+/**
+ * Sets mock api as enabled source.
+ */
+function project_browser_update_9003() {
+  $config = \Drupal::configFactory()->getEditable('project_browser.enabled_source');
+  $config->set('enabled_source', 'drupalorg_mockapi')->save(TRUE);
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Populates Project Browser module tables with the latest fixture data.
+ */
+function project_browser_update_9004() {
+  $connection = Database::getConnection();
+  $connection->truncate('project_browser_projects')->execute();
+  $connection->truncate('project_browser_categories')->execute();
+  _project_browser_populate_from_fixture();
+}
+
+function project_browser_update_9005() {
+  $connection = Database::getConnection();
+  $connection->truncate('project_browser_projects')->execute();
+  $connection->truncate('project_browser_categories')->execute();
+  _project_browser_populate_from_fixture();
+}

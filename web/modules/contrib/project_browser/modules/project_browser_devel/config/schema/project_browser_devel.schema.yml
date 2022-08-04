@@ -1,0 +1,7 @@
+project_browser_devel.settings:
+  type: config_object
+  label: "Project Browser Devel settings"
+  mapping:
+    previous_enabled_source:
+      type: string
+      label: "Previous enabled source plugin"

@@ -1,0 +1,57 @@
+project_browser.api_get_development_status:
+  path: '/drupal-org-proxy/development_status'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\ProjectBrowserEndpointController::getAllDevelopmentStatus'
+    _title: 'Get all development status values'
+  requirements:
+    _permission: 'administer modules'
+  #options:
+  #  no_cache: 'TRUE'
+project_browser.api_get_maintenance_status:
+  path: '/drupal-org-proxy/maintenance_status'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\ProjectBrowserEndpointController::getAllMaintenanceStatus'
+    _title: 'Get all maintenance status values'
+  requirements:
+    _permission: 'administer modules'
+  #options:
+  #  no_cache: 'TRUE'
+project_browser.api_get_security_coverage:
+  path: '/drupal-org-proxy/security_coverage'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\ProjectBrowserEndpointController::getAllSecurityCoverage'
+    _title: 'Get all security coverage values'
+  requirements:
+    _permission: 'administer modules'
+  #options:
+  #  no_cache: 'TRUE'
+project_browser.api_get_categories:
+  path: '/drupal-org-proxy/categories'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\ProjectBrowserEndpointController::getAllCategories'
+    _title: 'Get all categories'
+  requirements:
+    _permission: 'administer modules'
+  #options:
+  #  no_cache: 'TRUE'
+project_browser.api_project_get_all:
+  path: '/drupal-org-proxy/project'
+  methods: [GET]
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\ProjectBrowserEndpointController::getAllProjects'
+    _title: 'Get all projects'
+  requirements:
+    _permission: 'administer modules'
+  #options:
+  #  no_cache: 'TRUE'
+project_browser.browse:
+  path: '/admin/modules/browse'
+  defaults:
+    _controller: '\Drupal\project_browser\Controller\BrowserController::browse'
+    _title: 'Browse Drupal.org projects'
+  requirements:
+    _permission: 'administer modules'
