@@ -1,0 +1,15 @@
+name: Commerce Simple Stock
+description: 'Adds the commerce stock management feature.'
+package: Commerce
+type: module
+core_version_requirement: ^8.8 || ^9
+configure: commerce_simple_stock.settings
+
+dependencies:
+  - commerce:commerce_order
+  - commerce:commerce_product
+
+# Information added by Drupal.org packaging script on 2020-11-26
+version: '8.x-1.1'
+project: 'commerce_simple_stock'
+datestamp: 1606404008

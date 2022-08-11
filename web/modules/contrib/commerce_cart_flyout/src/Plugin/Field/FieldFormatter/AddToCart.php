@@ -207,6 +207,7 @@ class AddToCart extends FormatterBase implements ContainerFactoryPluginInterface
           'theme' => [
             'commerce_cart_flyout_add_to_cart_button' => $this->renderTemplate('commerce_cart_flyout_add_to_cart_button'),
             'commerce_cart_flyout_add_to_cart_variation_select' => $this->renderTemplate('commerce_cart_flyout_add_to_cart_variation_select'),
+            'commerce_cart_flyout_add_to_cart_quantity' => $this->renderTemplate('commerce_cart_flyout_add_to_cart_quantity'),
           ],
         ],
       ],

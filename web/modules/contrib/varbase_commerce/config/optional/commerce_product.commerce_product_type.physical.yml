@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies: {}
+id: physical
+label: Physical
+description: "Provides a basic structure for physical products and related view modes."
+variationType: physical
+multipleVariations: true
+injectVariationFields: true
+traits: {}
+locked: false

@@ -10,6 +10,7 @@
       'change .attribute-widgets input[type="radio"]': 'onAttributeChange',
       'change .attribute-widgets select': 'onAttributeChange',
       'change .variations-select select': 'onVariationTitleChange',
+      'change .quantity input[type="number"]': 'onQuantityChange',
     },
     _populateSelectedAttributes(variation) {
       _.each(this.model.getAttributes(), (attribute, i) => {
@@ -42,8 +43,13 @@
         selectedVariation,
       }));
     },
+    onQuantityChange(event) {
+      const value = event.target.value >= 1 ? event.target.value : "1.00";
+      this.model.setQuantity(parseInt(value));
+    },
     addToCart() {
       const selectedVariation = this.model.getSelectedVariation();
+      const quantity = this.model.getQuantity();
       $.ajax({
         url: Drupal.url('cart/add?_format=json'),
         method: 'POST',
@@ -51,7 +57,7 @@
           {
             purchased_entity_type: 'commerce_product_variation',
             purchased_entity_id: selectedVariation.variation_id,
-            quantity: 1
+            quantity: quantity
           }
         ]),
         contentType: 'application/json;',
@@ -64,7 +70,13 @@
     },
     render() {
       if (this.model.getVariationCount() === 1) {
-        this.$el.html(Drupal.theme('addToCartButton'));
+        let html = [
+          '<div class="variations-common-elements">'
+        ]
+        html.push(Drupal.theme('addToCartQuantity'));
+        html.push(Drupal.theme('addToCartButton'));
+        html.push('</div>');
+        this.$el.html(html.join(''));
       }
       else if (this.model.getAttributes().length === 0 || this.model.getType() !== 'commerce_product_variation_attributes') {
         let html = [
@@ -77,7 +89,10 @@
         }));
 
         html.push('</div>');
+        html.push('<div class="variations-common-elements">');
+        html.push(Drupal.theme('addToCartQuantity'));
         html.push(Drupal.theme('addToCartButton'));
+        html.push('</div>');
         this.$el.html(html.join(''));
       }
       else {
@@ -111,13 +126,16 @@
             html.push(Drupal.theme('addToCartAttributesRadios', defaultArgs))
           }
           else if (entry.element_type === 'commerce_product_rendered_attribute') {
-            html.push(Drupal.theme('addToCartAttributesRendered', Object.assign({}, defaultArgs, {
+            html.push(Drupal.theme('addToCartAttributesRendered', _.extend({}, defaultArgs, {
               attributeValues: view.model.getRenderedAttribute('attribute_' + entry.id)
             })))
           }
         });
         html.push('</div>');
+        html.push('<div class="variations-common-elements">');
+        html.push(Drupal.theme('addToCartQuantity'));
         html.push(Drupal.theme('addToCartButton'));
+        html.push('</div>');
         this.$el.html(html.join(''));
       }
     }

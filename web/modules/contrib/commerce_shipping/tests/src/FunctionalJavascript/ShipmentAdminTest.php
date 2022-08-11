@@ -11,7 +11,6 @@ use Drupal\commerce_shipping\Entity\PackageType;
 use Drupal\commerce_shipping\Entity\Shipment;
 use Drupal\commerce_shipping\Entity\ShipmentType;
 use Drupal\commerce_shipping\ShipmentItem;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Core\Url;
 use Drupal\field\Entity\FieldConfig;
@@ -30,7 +29,6 @@ use Drupal\views\Entity\View;
 class ShipmentAdminTest extends CommerceWebDriverTestBase {
 
   use AssertMailTrait;
-  use StringTranslationTrait;
 
   /**
    * The default profile's address.
@@ -86,7 +84,6 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
       'administer commerce_shipment_type',
       'access commerce_order overview',
       'administer commerce_payment_gateway',
-      'view commerce_product',
     ], parent::getAdministratorPermissions());
   }
 
@@ -122,12 +119,6 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
         'number' => '7.99',
         'currency_code' => 'USD',
       ],
-    ]);
-    $this->createEntity('commerce_product', [
-      'title' => $this->randomMachineName(),
-      'type' => 'default',
-      'variations' => [$variation],
-      'stores' => [$this->store],
     ]);
     $order_item = $this->createEntity('commerce_order_item', [
       'title' => $this->randomMachineName(),
@@ -351,7 +342,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
       'title[0][value]' => 'Test shipment',
     ], 'Save');
     $this->assertSession()->addressEquals($this->shipmentUri);
-    $this->assertSession()->pageTextContains($this->t('Saved shipment for order @order.', ['@order' => $this->order->getOrderNumber()]));
+    $this->assertSession()->pageTextContains(t('Saved shipment for order @order.', ['@order' => $this->order->getOrderNumber()]));
 
     \Drupal::entityTypeManager()->getStorage('commerce_order')->resetCache([$this->order->id()]);
     $this->order = Order::load($this->order->id());

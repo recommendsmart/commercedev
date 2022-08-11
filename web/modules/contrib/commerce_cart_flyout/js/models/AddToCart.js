@@ -4,8 +4,6 @@
 * https://www.drupal.org/node/2815083
 * @preserve
 **/
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 (function (Backbone, Drupal) {
@@ -17,7 +15,8 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       injectedFields: {},
       variations: {},
       variationCount: 0,
-      type: 'commerce_product_variation_attributes'
+      type: 'commerce_product_variation_attributes',
+      quantity: 0
     },
     initialize: function initialize() {
       this.set('variationCount', Object.keys(this.get('variations')).length);
@@ -39,7 +38,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var _this = this;
 
       function getSelectedAttributeValueId(fieldName) {
-        if (_typeof(selectedAttributes[fieldName]) === 'object') {
+        if (typeof selectedAttributes[fieldName] === 'object') {
           return selectedAttributes[fieldName].attribute_value_id.toString();
         }
         return selectedAttributes[fieldName].toString();
@@ -48,7 +47,7 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         if (!variation.hasOwnProperty(fieldName)) {
           return '';
         }
-        if (_typeof(variation[fieldName]) === 'object') {
+        if (typeof variation[fieldName] === 'object') {
           return variation[fieldName].attribute_value_id.toString();
         }
         return variation[fieldName].toString();
@@ -61,63 +60,19 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var selectedVariation = null;
 
       while (attributes.length > 0) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-          for (var _iterator = variations[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var variation = _step.value;
-
-            var match = true;
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
-
-            try {
-              for (var _iterator2 = attributes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var attribute = _step2.value;
-
-                var fieldName = 'attribute_' + attribute.id;
-                if (getVariationAttributeValueId(fieldName, variation) !== getSelectedAttributeValueId(fieldName)) {
-                  match = false;
-                }
-              }
-            } catch (err) {
-              _didIteratorError2 = true;
-              _iteratorError2 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
-                }
-              } finally {
-                if (_didIteratorError2) {
-                  throw _iteratorError2;
-                }
-              }
-            }
-
-            if (match) {
-              selectedVariation = variation;
-              break;
+        for (var variation in variations) {
+          var match = true;
+          for (var attribute in attributes) {
+            var fieldName = 'attribute_' + attributes[attribute].id;
+            if (getVariationAttributeValueId(fieldName, variations[variation]) !== getSelectedAttributeValueId(fieldName)) {
+              match = false;
             }
           }
-        } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-              _iterator.return();
-            }
-          } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
-            }
+          if (match) {
+            selectedVariation = variations[variation];
+            break;
           }
         }
-
         if (selectedVariation !== null) {
           break;
         }
@@ -143,6 +98,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     },
     getType: function getType() {
       return this.attributes['type'];
+    },
+    setQuantity: function setQuantity(quantity) {
+      this.set('quantity', quantity);
+    },
+    getQuantity: function getQuantity() {
+      return this.attributes['quantity'];
     }
   });
 })(Backbone, Drupal);

@@ -1,0 +1,22 @@
+{
+    "name": "drupal/commerce_simple_stock",
+    "description": "Adds a commerce stock management feature.",
+    "type": "drupal-module",
+    "keywords": ["Drupal", "Drupal Commerce", "Commerce"],
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://www.drupal.org/project/commerce_simple_stock",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/commerce_simple_stock",
+        "source": "https://git.drupalcode.org/project/commerce_simple_stock"
+    },
+    "repositories": {
+       "drupal": {
+         "type": "composer",
+         "url": "https://packages.drupal.org/8"
+       }
+    },
+    "require": {
+        "drupal/core": "^8.8 || ^9.0",
+        "drupal/commerce": "^2.0"
+    }
+}

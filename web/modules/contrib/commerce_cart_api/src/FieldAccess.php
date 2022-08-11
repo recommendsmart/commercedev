@@ -128,6 +128,7 @@ class FieldAccess implements FieldAccessInterface {
         'order_total',
         'unit_price',
         'total_price',
+        'locked',
       ];
     }
     return [];

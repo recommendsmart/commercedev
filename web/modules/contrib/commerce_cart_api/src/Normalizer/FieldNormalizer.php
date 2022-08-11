@@ -66,4 +66,11 @@ class FieldNormalizer extends CoreFieldNormalizer {
     return parent::denormalize($data, $class, $format, $context);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function hasCacheableSupportsMethod(): bool {
+    return FALSE;
+  }
+
 }

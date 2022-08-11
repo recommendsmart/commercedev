@@ -8,6 +8,7 @@
       variations: {},
       variationCount: 0,
       type: 'commerce_product_variation_attributes',
+      quantity: 0,
     },
     initialize() {
       this.set('variationCount', Object.keys(this.get('variations')).length);
@@ -47,16 +48,16 @@
       let selectedVariation = null;
 
       while (attributes.length > 0) {
-        for (let variation of variations) {
+        for (let variation in variations) {
           let match = true;
-          for (let attribute of attributes) {
-            let fieldName = 'attribute_' + attribute.id;
-            if (getVariationAttributeValueId(fieldName, variation) !== getSelectedAttributeValueId(fieldName)) {
+          for (let attribute in attributes) {
+            let fieldName = 'attribute_' + attributes[attribute].id;
+            if (getVariationAttributeValueId(fieldName, variations[variation]) !== getSelectedAttributeValueId(fieldName)) {
               match = false;
             }
           }
           if (match) {
-            selectedVariation = variation;
+            selectedVariation = variations[variation];
             break;
           }
         }
@@ -85,6 +86,12 @@
     },
     getType() {
       return this.attributes['type'];
+    },
+    setQuantity(quantity) {
+      this.set('quantity', quantity);
+    },
+    getQuantity() {
+      return this.attributes['quantity'];
     }
   });
 })(Backbone, Drupal);

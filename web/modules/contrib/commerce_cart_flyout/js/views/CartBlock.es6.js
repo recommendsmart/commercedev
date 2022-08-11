@@ -8,10 +8,7 @@
         },
         offcanvasOpen(event) {
           event.preventDefault();
-          // @todo add CSS to target a data attribute to hide cursor and underline.
-          if (this.model.getCount() > 0) {
-            Drupal.cartFlyout.flyoutOffcanvasToggle();
-          }
+          Drupal.cartFlyout.flyoutOffcanvasToggle();
         },
         render() {
             const template = Drupal.cartFlyout.getTemplate({
@@ -20,6 +17,7 @@
               });
               this.$el.html(template.render({
                 url: this.model.getUrl(),
+                count: this.model.getCount(),
                 count_text: Drupal.formatPlural(
                   this.model.getCount(),
                   this.model.getCountSingular(),

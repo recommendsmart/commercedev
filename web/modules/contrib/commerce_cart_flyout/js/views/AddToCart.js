@@ -4,7 +4,6 @@
 * https://www.drupal.org/node/2815083
 * @preserve
 **/
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 (function ($, Backbone, _, Drupal, drupalSettings) {
   Drupal.addToCart.AddToCartView = Backbone.View.extend({
@@ -18,7 +17,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       'click .form-submit': 'addToCart',
       'change .attribute-widgets input[type="radio"]': 'onAttributeChange',
       'change .attribute-widgets select': 'onAttributeChange',
-      'change .variations-select select': 'onVariationTitleChange'
+      'change .variations-select select': 'onVariationTitleChange',
+      'change .quantity input[type="number"]': 'onQuantityChange'
     },
     _populateSelectedAttributes: function _populateSelectedAttributes(variation) {
       var _this = this;
@@ -55,15 +55,20 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         selectedVariation: selectedVariation
       }));
     },
+    onQuantityChange: function onQuantityChange(event) {
+      var value = event.target.value >= 1 ? event.target.value : "1.00";
+      this.model.setQuantity(parseInt(value));
+    },
     addToCart: function addToCart() {
       var selectedVariation = this.model.getSelectedVariation();
+      var quantity = this.model.getQuantity();
       $.ajax({
         url: Drupal.url('cart/add?_format=json'),
         method: 'POST',
         data: JSON.stringify([{
           purchased_entity_type: 'commerce_product_variation',
           purchased_entity_id: selectedVariation.variation_id,
-          quantity: 1
+          quantity: quantity
         }]),
         contentType: 'application/json;',
         dataType: 'json'
@@ -74,23 +79,30 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     },
     render: function render() {
       if (this.model.getVariationCount() === 1) {
-        this.$el.html(Drupal.theme('addToCartButton'));
+        var html = ['<div class="variations-common-elements">'];
+        html.push(Drupal.theme('addToCartQuantity'));
+        html.push(Drupal.theme('addToCartButton'));
+        html.push('</div>');
+        this.$el.html(html.join(''));
       } else if (this.model.getAttributes().length === 0 || this.model.getType() !== 'commerce_product_variation_attributes') {
-        var html = ['<div class="variations-select form-group">'];
+        var _html = ['<div class="variations-select form-group">'];
 
         var variations = this.model.getVariations();
-        html.push(Drupal.theme('addToCartVariationSelect', {
+        _html.push(Drupal.theme('addToCartVariationSelect', {
           variations: Object.keys(variations).map(function (uuid) {
             return variations[uuid];
           })
         }));
 
-        html.push('</div>');
-        html.push(Drupal.theme('addToCartButton'));
-        this.$el.html(html.join(''));
+        _html.push('</div>');
+        _html.push('<div class="variations-common-elements">');
+        _html.push(Drupal.theme('addToCartQuantity'));
+        _html.push(Drupal.theme('addToCartButton'));
+        _html.push('</div>');
+        this.$el.html(_html.join(''));
       } else {
         var view = this;
-        var _html = ['<div class="attribute-widgets form-group">'];
+        var _html2 = ['<div class="attribute-widgets form-group">'];
         var currentVariation = view.model.getSelectedVariation();
         this.model.getAttributes().forEach(function (entry) {
           var defaultArgs = {
@@ -101,7 +113,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             attributeValues: entry.values,
             activeValue: view.selectedAttributes['attribute_' + entry.id]
           };
-          if (_typeof(defaultArgs.activeValue) === 'object') {
+          if (typeof defaultArgs.activeValue === 'object') {
             defaultArgs.activeValue = defaultArgs.activeValue.attribute_value_id;
           }
           _.each(entry.values, function (attributeValue) {
@@ -111,18 +123,21 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           });
 
           if (entry.element_type === 'select') {
-            _html.push(Drupal.theme('addToCartAttributesSelect', defaultArgs));
+            _html2.push(Drupal.theme('addToCartAttributesSelect', defaultArgs));
           } else if (entry.element_type === 'radios') {
-            _html.push(Drupal.theme('addToCartAttributesRadios', defaultArgs));
+            _html2.push(Drupal.theme('addToCartAttributesRadios', defaultArgs));
           } else if (entry.element_type === 'commerce_product_rendered_attribute') {
-            _html.push(Drupal.theme('addToCartAttributesRendered', Object.assign({}, defaultArgs, {
+            _html2.push(Drupal.theme('addToCartAttributesRendered', _.extend({}, defaultArgs, {
               attributeValues: view.model.getRenderedAttribute('attribute_' + entry.id)
             })));
           }
         });
-        _html.push('</div>');
-        _html.push(Drupal.theme('addToCartButton'));
-        this.$el.html(_html.join(''));
+        _html2.push('</div>');
+        _html2.push('<div class="variations-common-elements">');
+        _html2.push(Drupal.theme('addToCartQuantity'));
+        _html2.push(Drupal.theme('addToCartButton'));
+        _html2.push('</div>');
+        this.$el.html(_html2.join(''));
       }
     }
   });

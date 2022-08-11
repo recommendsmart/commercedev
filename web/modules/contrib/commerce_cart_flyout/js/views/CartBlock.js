@@ -16,10 +16,7 @@
     },
     offcanvasOpen: function offcanvasOpen(event) {
       event.preventDefault();
-
-      if (this.model.getCount() > 0) {
-        Drupal.cartFlyout.flyoutOffcanvasToggle();
-      }
+      Drupal.cartFlyout.flyoutOffcanvasToggle();
     },
     render: function render() {
       var template = Drupal.cartFlyout.getTemplate({
@@ -28,6 +25,7 @@
       });
       this.$el.html(template.render({
         url: this.model.getUrl(),
+        count: this.model.getCount(),
         count_text: Drupal.formatPlural(this.model.getCount(), this.model.getCountSingular(), this.model.getCountPlural())
       }));
       var icon = new Drupal.cartFlyout.CartIconView({

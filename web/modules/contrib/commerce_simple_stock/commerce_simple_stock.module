@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * This is the module for commerce simple stock.
+ */
+
+use Drupal\commerce_product\Entity\ProductVariation;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function commerce_simple_stock_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the commerce_simple_stock module.
+    case 'help.page.commerce_simple_stock':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Allows commerce_simple_stock.') . '</p>';
+      // Here should be details about setting up and using.
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_simple_stock_theme($existing, $type, $theme, $path) {
+  return [
+    'commerce_simple_stock_inventory_control_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_id_form_alter().
+ */
+function commerce_simple_stock_form_commerce_order_item_add_to_cart_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $form_data = $form_state->getStorage();
+  if (empty($form_data['product'])) {
+    return;
+  }
+
+  $selectedVariationId = $form_state->get('selected_variation');
+  if ($selectedVariationId != NULL) {
+    $variation = ProductVariation::load($selectedVariationId);
+  }
+  else {
+    $product = $form_data['product'];
+    $variation = $product->getDefaultVariation();
+  }
+
+  if ($variation->hasField('field_stock') && $variation->field_stock->value != NULL) {
+
+    $stock = (integer) $variation->field_stock->value;
+
+    if ($stock <= 0) {
+      $form['quantity'] = NULL;
+      $form['actions'] = NULL;
+      $form['outofstock'] = [
+        '#type' => 'textfield',
+        '#value' => t('Out of Stock'),
+        '#weight' => 0,
+        '#disabled' => TRUE,
+      ];
+    }
+
+  }
+
+}

@@ -18,6 +18,9 @@
     const template = _.template(drupalSettings.theme.commerce_cart_flyout_add_to_cart_variation_select);
     return template(args);
   })(_);
+  Drupal.theme.addToCartQuantity = () => {
+    return drupalSettings.theme.commerce_cart_flyout_add_to_cart_quantity
+  };
 
   Drupal.addToCart = {};
   Drupal.behaviors.addToCart = {

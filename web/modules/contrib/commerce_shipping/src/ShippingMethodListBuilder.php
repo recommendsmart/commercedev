@@ -184,7 +184,7 @@ class ShippingMethodListBuilder extends EntityListBuilder implements FormInterfa
       $form['actions']['#type'] = 'actions';
       $form['actions']['submit'] = [
         '#type' => 'submit',
-        '#value' => $this->t('Save'),
+        '#value' => t('Save'),
         '#button_type' => 'primary',
       ];
     }

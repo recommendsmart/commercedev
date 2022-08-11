@@ -64,4 +64,11 @@ class FieldItemNormalizer extends CoreFieldItemNormalizer {
     return $data;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function hasCacheableSupportsMethod(): bool {
+    return FALSE;
+  }
+
 }

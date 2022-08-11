@@ -75,4 +75,11 @@ class EntityReferenceNormalizer extends EntityReferenceFieldItemNormalizer {
     return $this->allowedFields;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function hasCacheableSupportsMethod(): bool {
+    return FALSE;
+  }
+
 }

@@ -33,6 +33,9 @@
       return template(args);
     };
   }(_);
+  Drupal.theme.addToCartQuantity = function () {
+    return drupalSettings.theme.commerce_cart_flyout_add_to_cart_quantity;
+  };
 
   Drupal.addToCart = {};
   Drupal.behaviors.addToCart = {

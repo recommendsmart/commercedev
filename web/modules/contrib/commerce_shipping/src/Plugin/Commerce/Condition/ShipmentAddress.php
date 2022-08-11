@@ -13,7 +13,7 @@ use Drupal\Core\Form\FormStateInterface;
  * @CommerceCondition(
  *   id = "shipment_address",
  *   label = @Translation("Shipping address"),
- *   category = @Translation("Customer"),
+ *   category = @Translation("Shipping"),
  *   entity_type = "commerce_shipment",
  *   weight = 10,
  * )

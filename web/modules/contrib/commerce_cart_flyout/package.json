@@ -37,6 +37,7 @@
         [
           "env",
           {
+            "exclude": ["babel-plugin-transform-es2015-typeof-symbol"],
             "modules": false,
             "targets": {
               "browsers": [

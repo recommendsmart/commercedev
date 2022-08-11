@@ -110,7 +110,7 @@ class Shipping extends TaxTypeBase {
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['strategy'] = [
       '#type' => 'radios',
-      '#title' => $this->t('Strategy'),
+      '#title' => t('Strategy'),
       '#options' => [
         'default' => $this->t("Apply the default (standard) rate of the order's tax type"),
         'highest' => $this->t('Apply the highest rate found on the order'),
@@ -333,10 +333,6 @@ class Shipping extends TaxTypeBase {
     foreach ($order->getItems() as $order_item) {
       $order_item_total = $order_item->getTotalPrice();
       $order_item_tax_adjustments = $order_item->getAdjustments(['tax']);
-      // This order item is tax exempt, skip it.
-      if (!$order_item_tax_adjustments) {
-        continue;
-      }
       $order_item_tax_adjustment = reset($order_item_tax_adjustments);
       $percentage = $order_item_tax_adjustment->getPercentage();
       if (!isset($groups[$percentage])) {

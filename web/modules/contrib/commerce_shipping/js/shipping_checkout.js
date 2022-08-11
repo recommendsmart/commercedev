@@ -29,7 +29,7 @@
     init: function init(context) {
       var _this = this;
 
-      var requiredInputs = document.getElementById(this.wrapper).querySelectorAll('input[required], select[required], input[type=checkbox]');
+      var requiredInputs = document.getElementById(this.wrapper).querySelectorAll('input[required], select[required]');
 
       if (requiredInputs.length) {
         once('shipping-recalculate', requiredInputs, context).forEach(function (element) {

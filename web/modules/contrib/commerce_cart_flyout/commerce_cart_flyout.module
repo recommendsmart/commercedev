@@ -16,6 +16,7 @@ function commerce_cart_flyout_theme() {
     'commerce_cart_flyout_add_to_cart_attributes_radios' => $defaults,
     'commerce_cart_flyout_add_to_cart_attributes_rendered' => $defaults,
     'commerce_cart_flyout_add_to_cart_variation_select' => $defaults,
+    'commerce_cart_flyout_add_to_cart_quantity' => $defaults,
   ];
 }
 

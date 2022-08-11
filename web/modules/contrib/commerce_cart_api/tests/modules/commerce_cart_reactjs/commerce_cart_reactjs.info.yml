@@ -6,7 +6,7 @@ package: Testing
 dependencies:
   - commerce_cart
 
-# Information added by Drupal.org packaging script on 2021-01-21
-version: '8.x-1.5'
+# Information added by Drupal.org packaging script on 2022-08-02
+version: '8.x-1.6'
 project: 'commerce_cart_api'
-datestamp: 1611244232
+datestamp: 1659436448
