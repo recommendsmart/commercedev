@@ -89,6 +89,7 @@
         "drupal/scroll_top_button": "^2.0",
         "drupal/smtp": "^1.0",
         "drupal/varbase_commerce": "^1.0@alpha",
+        "drupal/vartheme_bs5": "^1.0@RC",
         "drupal/views_bootstrap": "5.3",
         "drupal/views_data_export": "^1.1",
         "drush/drush": "^10.3",

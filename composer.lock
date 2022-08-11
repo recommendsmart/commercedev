@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "47846f4ec047efa688cc03cae65b49bb",
+    "content-hash": "79af524721650ec7a2b055d53fa91972",
     "packages": [
         {
             "name": "apimatic/jsonmapper",
@@ -8884,6 +8884,70 @@
             "support": {
                 "source": "http://cgit.drupalcode.org/varbase_commerce",
                 "issues": "https://www.drupal.org/project/issues/varbase_commerce"
+            }
+        },
+        {
+            "name": "drupal/vartheme_bs5",
+            "version": "1.0.0-rc2",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/vartheme_bs5.git",
+                "reference": "1.0.0-rc2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/vartheme_bs5-1.0.0-rc2.zip",
+                "reference": "1.0.0-rc2",
+                "shasum": "4614cdfb6e5fe837462b9a6308a147f74df1a087"
+            },
+            "require": {
+                "composer/installers": "~1.0 || ~2.0",
+                "cweagans/composer-patches": "~1.0",
+                "drupal/bootstrap_barrio": "~5",
+                "drupal/core": "~9.0 || ~10.0",
+                "oomphinc/composer-installers-extender": "~1.0 || ~2.0"
+            },
+            "type": "drupal-theme",
+            "extra": {
+                "drupal": {
+                    "version": "1.0.0-rc2",
+                    "datestamp": "1652890159",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                },
+                "installer-types": [
+                    "bower-asset",
+                    "npm-asset"
+                ],
+                "enable-patching": true,
+                "composer-exit-on-patch-failure": true
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Vardot",
+                    "homepage": "https://www.drupal.org/vardot",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Mohammed J. Razem",
+                    "homepage": "https://www.drupal.org/user/255384"
+                },
+                {
+                    "name": "Rajab Natshah",
+                    "homepage": "https://www.drupal.org/user/1414312"
+                }
+            ],
+            "description": "A SASS base theme for Varbase standard websites. Based on Barrio (Bootstrap 5) theme.",
+            "homepage": "https://www.drupal.org/project/vartheme_bs5",
+            "support": {
+                "source": "http://cgit.drupalcode.org/vartheme_bs5",
+                "issues": "http://drupal.org/project/issues/vartheme_bs5"
             }
         },
         {
@@ -20034,7 +20098,8 @@
         "drupal/gin": 10,
         "drupal/gin_toolbar": 10,
         "drupal/project_browser": 10,
-        "drupal/varbase_commerce": 15
+        "drupal/varbase_commerce": 15,
+        "drupal/vartheme_bs5": 5
     },
     "prefer-stable": true,
     "prefer-lowest": false,
